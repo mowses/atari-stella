@@ -4,7 +4,7 @@ const { iceServers } = require('@geckos.io/server')
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const address = '127.0.0.1';
-const port = 13;
+const port = 23;
 
 const io = geckos({
 	iceServers: process.env.NODE_ENV === 'production' ? iceServers : []

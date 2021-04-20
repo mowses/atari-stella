@@ -27,6 +27,11 @@
 #include "DispatchResult.hxx"
 #include "Base.hxx"
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
+
 enum CollisionMask: uInt32 {
   player0   = 0b0111110000000000,
   player1   = 0b0100001111000000,
@@ -1386,6 +1391,48 @@ void TIA::onFrameComplete()
   myFrontBufferScanlines = scanlinesLastFrame();
 
   ++myFramesSinceLastRender;
+
+  #ifdef STREAM_SUPPORT
+    uInt8 last;
+    string msg_str;
+
+    // cerr << "====" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
+    // cerr << "====" + mySettings.getString("stream.hostname") + "====\n";
+    // cerr << std::to_string(myFrontBuffer.size()) + "\n";
+    for (std::size_t i = 0; i < myFrontBuffer.size(); ++i) {
+      if (myFrontBuffer[i] != last) {
+        //cerr << std::to_string(i) + "=" + std::to_string(myFrontBuffer[i]) + "\n";
+        msg_str = msg_str + std::to_string(i) + ":" + std::to_string(myFrontBuffer[i]) + ",";
+        last = myFrontBuffer[i];
+      }
+    }
+
+    char msg[msg_str.length() + 1];
+    strcpy(msg, msg_str.c_str());
+    udpSend(msg);
+  #endif
+}
+
+bool TIA::udpSend(const char *msg){
+    sockaddr_in servaddr;
+    int fd = socket(AF_INET,SOCK_DGRAM,0);
+    if(fd<0){
+        cerr << "cannot open socket";
+        return false;
+    }
+
+    bzero(&servaddr,sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
+    servaddr.sin_port = htons(mySettings.getInt("stream.port"));
+    if (sendto(fd, msg, strlen(msg), 0,
+               (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
+        cerr << "cannot send message";
+        close(fd);
+        return false;
+    }
+    close(fd);
+    return true;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

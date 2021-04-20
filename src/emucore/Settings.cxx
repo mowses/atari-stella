@@ -41,6 +41,10 @@ Settings::Settings()
   setPermanent(SETTINGS_VERSION_KEY, 0);
   setPermanent("stella.version", "6.2.1");
 
+  // STREAM options
+  setPermanent("stream.hostname", "127.0.0.1");
+  setPermanent("stream.port", "33");
+
   // Video-related options
   setPermanent("video", "");
   setPermanent("speed", "1.0");
