@@ -607,6 +607,11 @@ class TIA : public Device
     void onHalt();
 
     /**
+     * Send udp data packets if STREAM_SUPPORT
+     */
+    bool udpSend(const char *msg);
+
+    /**
      * Execute colorClocks cycles of TIA simulation.
      */
     void cycle(uInt32 colorClocks);
