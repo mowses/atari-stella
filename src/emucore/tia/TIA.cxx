@@ -1372,27 +1372,23 @@ void TIA::onFrameComplete()
   ++myFramesSinceLastRender;
 
   #ifdef STREAM_SUPPORT
-    uInt32 last;
+    uInt32 last = 99999;
     string msg_str;
 
     // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + "====\n";
     // cerr << std::to_string(myFrontBuffer.size()) + "\n";
-    for (std::size_t i = 0; i < myFrontBuffer.size(); ++i) {
-      if (myFrontBuffer[i] != last) {
-        //cerr << std::to_string(i) + "=" + std::to_string(myFrontBuffer[i]) + "\n";
-        msg_str = msg_str + to_zero_lead(i, 5) + to_zero_lead(myFrontBuffer[i], 3);
-        last = myFrontBuffer[i];
-      }
+    std::size_t t = myFrontBuffer.size();
+    for (std::size_t i = 0; i < t; ++i) {
+      if (myFrontBuffer[i] == last) continue;
+      
+      //cerr << std::to_string(i) + "=" + std::to_string(myFrontBuffer[i]) + "\n";
+      msg_str = msg_str + to_zero_lead(i, 5) + to_zero_lead(myFrontBuffer[i], 3);
+      last = myFrontBuffer[i];
     }
 
     //msg_str = std::to_string(myFrontBuffer[i]) + std::to_string(i);
-    if (msg_str.length() <= 0) return;
-
-    char msg[msg_str.length()];
-    strcpy(msg, msg_str.c_str());
-
-    udpSend(msg);
+    udpSend(msg_str.c_str());
 
   #endif
 }
