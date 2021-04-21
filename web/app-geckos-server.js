@@ -18,7 +18,7 @@ io.onConnection(channel => {
 		console.log(`${channel.id} got disconnected`)
 	})
 
-	channel.emit('chat message', `Welcome to the chat ${channel.id}!`)
+	//channel.emit('chat message', `Welcome to the chat ${channel.id}!`)  // ja tem channel.emit Buffer.from
 
 	server.on('error', (err) => {
 		console.log(`server error:\n${err.stack}`);
@@ -28,7 +28,7 @@ io.onConnection(channel => {
 
 	server.on('message', (msg, rinfo) => {
 		//console.log(`server got: ${msg} from ${rinfo.address}:${rinfo.port}`);
-		channel.emit('chat message', `This is the game data: ${msg}`)
+		channel.emit('chat message', Buffer.from(msg))
 	});
 
 	server.on('listening', () => {

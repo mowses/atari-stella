@@ -43,7 +43,7 @@ Settings::Settings()
 
   // STREAM options
   setPermanent("stream.hostname", "127.0.0.1");
-  setPermanent("stream.port", "33");
+  setPermanent("stream.port", "23");
 
   // Video-related options
   setPermanent("video", "");

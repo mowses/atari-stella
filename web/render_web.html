@@ -44,7 +44,7 @@
 
   <canvas id="enduro" width="160" height="228"></canvas>
   <script>
-    console.log(output, 'continuar daquie. fazer com que o output seja rapidamente interpretado pelo render. estou pesquisando sobre como o javascript poderia ler os bytes de output, mas nao sei se é possivel de fazer isso');
+    //console.log(output, 'continuar daquie. fazer com que o output seja rapidamente interpretado pelo render. estou pesquisando sobre como o javascript poderia ler os bytes de output, mas nao sei se é possivel de fazer isso');
     var canvas = document.getElementById('enduro');
     var ctx = canvas.getContext('2d', { alpha: false });
     var pixels_image = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -53,8 +53,9 @@
 
     function render(ctx, pixels_image, output, colors)
     {
-        var width = pixels_image.width;
-        var height = pixels_image.height;
+        const width = pixels_image.width;
+        const height = pixels_image.height;
+
         var pixels = pixels_image.data;
         var last;
 
@@ -62,6 +63,7 @@
             for (let x = 0; x < width; x++) {
                 let index = x + y * width;
                 let output_index = output[index];
+                
                 if (output_index === undefined) {
                     // missing pixel
                     output_index = last;
@@ -69,6 +71,11 @@
 
                 let offset = index * 4;
                 let color = colors[output_index];
+
+                if (color === undefined) {
+                  console.log(index, output_index, last, output);
+                  return;
+                }
                 
                 pixels[offset] = color.r;
                 pixels[offset + 1] = color.g;
@@ -83,18 +90,24 @@
 
     // setInterval(function() {
     //     var colors = random_colors(255);
-    //     //var _output = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
+    //     var _output = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
     //     render(ctx, pixels_image, _output, colors);
     // }, 1000);
   </script>
   <script src="./app-geckos-client.js"></script>
   <script type="text/javascript">
     channel.on('chat message', function(data) {
-      console.log(data);
-      //var _output = ('{' + data.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
-      //console.log(_output);
-      //console.log('receiveddd chat message:', data);
-      //render(ctx, pixels_image, data, colors);
+      var cc = String.fromCharCode;
+      var output = {};
+      var len = 8;
+      
+      for (var i = 0, t = data.data.length - (len - 1); i < t; i += len) {
+        var pixel = data.data.slice(i, i+5).map( cp => cc( cp ) ).join('') << 0;
+        var color = data.data.slice(i+5, i+8).map( cp => cc( cp ) ).join('') << 0;
+        output[pixel] = color;
+      }
+      
+      render(ctx, pixels_image, output, colors);
     })
   </script>
 </body>
