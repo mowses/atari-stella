@@ -43,6 +43,10 @@
 #include "Control.hxx"
 #include "System.hxx"
 
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
 class AudioQueue;
 class DispatchResult;
 
@@ -607,9 +611,25 @@ class TIA : public Device
     void onHalt();
 
     /**
+     * ** SOCKET **
+     */
+    /**
+     * Open socket connection
+     */
+    bool openSocket();
+
+    std::string to_zero_lead(const int value, const unsigned precision);
+
+    /**
      * Send udp data packets if STREAM_SUPPORT
      */
     bool udpSend(const char *msg);
+
+    sockaddr_in servaddr;
+    int fd;
+    /**
+     * end UDP send
+     */
 
     /**
      * Execute colorClocks cycles of TIA simulation.

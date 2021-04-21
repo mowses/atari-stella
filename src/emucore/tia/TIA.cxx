@@ -173,6 +173,11 @@ void TIA::initialize()
   myFrameWsyncCycles = 0;
 #endif
 
+#ifdef STREAM_SUPPORT
+  close(fd);
+  openSocket();
+#endif
+
   if (myFrameManager)
     myFrameManager->reset();
 
@@ -1367,45 +1372,59 @@ void TIA::onFrameComplete()
   ++myFramesSinceLastRender;
 
   #ifdef STREAM_SUPPORT
-    uInt8 last;
+    uInt32 last;
     string msg_str;
 
-    // cerr << "====" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
+    // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + "====\n";
     // cerr << std::to_string(myFrontBuffer.size()) + "\n";
     for (std::size_t i = 0; i < myFrontBuffer.size(); ++i) {
       if (myFrontBuffer[i] != last) {
         //cerr << std::to_string(i) + "=" + std::to_string(myFrontBuffer[i]) + "\n";
-        msg_str = msg_str + std::to_string(i) + ":" + std::to_string(myFrontBuffer[i]) + ",";
+        msg_str = msg_str + to_zero_lead(i, 5) + to_zero_lead(myFrontBuffer[i], 3);
         last = myFrontBuffer[i];
       }
     }
 
-    char msg[msg_str.length() + 1];
+    //msg_str = std::to_string(myFrontBuffer[i]) + std::to_string(i);
+    if (msg_str.length() <= 0) return;
+
+    char msg[msg_str.length()];
     strcpy(msg, msg_str.c_str());
+
     udpSend(msg);
+
   #endif
 }
 
-bool TIA::udpSend(const char *msg){
-    sockaddr_in servaddr;
-    int fd = socket(AF_INET,SOCK_DGRAM,0);
-    if(fd<0){
-        cerr << "cannot open socket";
-        return false;
-    }
+std::string TIA::to_zero_lead(const int value, const unsigned precision)
+{
+     std::ostringstream oss;
+     oss << std::setw(precision) << std::setfill('0') << value;
+     return oss.str();
+}
 
-    bzero(&servaddr,sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
-    servaddr.sin_port = htons(mySettings.getInt("stream.port"));
+bool TIA::openSocket(){
+  fd = socket(AF_INET,SOCK_DGRAM,0);
+  if(fd<0){
+      cerr << "cannot open socket";
+      return false;
+  }
+
+  bzero(&servaddr,sizeof(servaddr));
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
+  servaddr.sin_port = htons(mySettings.getInt("stream.port"));
+
+  return true;
+}
+
+bool TIA::udpSend(const char *msg){
     if (sendto(fd, msg, strlen(msg), 0,
                (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
         cerr << "cannot send message";
-        close(fd);
         return false;
     }
-    close(fd);
     return true;
 }
 
