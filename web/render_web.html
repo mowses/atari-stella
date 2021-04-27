@@ -43,6 +43,11 @@
 <body>
 
   <canvas id="enduro" width="160" height="228"></canvas>
+  <audio src="http://localhost:2001/php-audio.php" type='audio/webm; codecs="vorbis"' controls preload="none"></audio>
+
+  <!-- <audio controls>
+    <source src="http://localhost:2001/php-audio.php" type="audio/mp3">
+  </audio> -->
   <script>
     //console.log(output, 'continuar daquie. fazer com que o output seja rapidamente interpretado pelo render. estou pesquisando sobre como o javascript poderia ler os bytes de output, mas nao sei se é possivel de fazer isso');
     var canvas = document.getElementById('enduro');
@@ -94,8 +99,48 @@
     //     render(ctx, pixels_image, _output, colors);
     // }, 1000);
   </script>
-  <script src="./app-geckos-client.js"></script>
+  <!-- <script src="./app-geckos-client.js"></script> -->
   <script type="text/javascript">
+    return;
+    //var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // // Create an empty three-second stereo buffer at the sample rate of the AudioContext
+    // var myArrayBuffer = audioCtx.createBuffer(2, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+
+    // // Fill the buffer with white noise;
+    // // just random values between -1.0 and 1.0
+    // for (var channel = 0; channel < myArrayBuffer.numberOfChannels; channel++) {
+    //   // This gives us the actual array that contains the data
+    //   var nowBuffering = myArrayBuffer.getChannelData(channel);
+    //   for (var i = 0; i < myArrayBuffer.length; i++) {
+    //     // Math.random() is in [0; 1.0]
+    //     // audio needs to be in [-1.0; 1.0]
+    //     nowBuffering[i] = Math.random() * 2 - 1;
+    //   }
+    // }
+
+    // // Get an AudioBufferSourceNode.
+    // // This is the AudioNode to use when we want to play an AudioBuffer
+    // var source = audioCtx.createBufferSource();
+
+    // // set the buffer in the AudioBufferSourceNode
+    // source.buffer = myArrayBuffer;
+
+    // // connect the AudioBufferSourceNode to the
+    // // destination so we can hear the sound
+    // source.connect(audioCtx.destination);
+
+    // // start the source playing
+    // source.start();
+
+
+
+    var audio = document.querySelector('audio');
+    // audio.onloadedmetadata = function(e) {
+    //   console.log('YEAHH');
+    //   audio.play();
+    // };
+
     channel.on('chat message', function(data) {
       var cc = String.fromCharCode;
       var output = {};
@@ -109,6 +154,47 @@
       
       render(ctx, pixels_image, output, colors);
     })
+
+    // channel.on('audio stream', function(data) {
+    //   let cc = String.fromCharCode;
+    //   const output = [];
+      
+    //   for (let i = 0, t = data.data.length; i < t; i++) {
+    //     output[i] = cc(data.data[i]);
+    //   }
+      
+    //   let blob = new Blob([output], { 'type' : 'audio/mp3' });
+    //     // // var blob = new Blob([buffer], { 'type' : 'arraybuffer' });
+    //   let url = (URL || webkitURL).createObjectURL(blob);
+    //   audio.src = url;
+    //   audio.play();
+        
+
+
+        
+
+        
+    // });
+
+    // abaixo funcionou
+    // window.addEventListener('load', function () {
+    //     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    //     var source = audioCtx.createBufferSource();
+    //     var xhr = new XMLHttpRequest();
+    //     xhr.open('GET', 'Kamen_Rider_Black_RX_OP.mp3');
+    //     xhr.responseType = 'arraybuffer';
+    //     xhr.addEventListener('load', function (r) {
+    //         audioCtx.decodeAudioData(
+    //                 xhr.response, 
+    //                 function (buffer) {
+    //                     source.buffer = buffer;
+    //                     source.connect(audioCtx.destination);
+    //                     source.loop = false;
+    //                 });
+    //         source.start(0);
+    //     });
+    //     xhr.send();
+    // });
   </script>
 </body>
 </html>

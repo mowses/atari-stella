@@ -1,7 +1,8 @@
-const geckos = require('@geckos.io/server').default
-const { iceServers } = require('@geckos.io/server')
-
+const fs = require('fs');
+const geckos = require('@geckos.io/server').default;
+const { iceServers } = require('@geckos.io/server');
 const dgram = require('dgram');
+
 const server = dgram.createSocket('udp4');
 const address = '127.0.0.1';
 const port = 23;
@@ -14,7 +15,19 @@ const io = geckos({
 io.listen(3000)
 
 io.onConnection(channel => {
-	channel.onDisconnect(() => {
+
+	// // audio stream
+	// const file = '/var/www/html/stella/web/Kamen_Rider_Black_RX_OP.mp3';
+	// const highWaterMark = 20;
+	// const readable = fs.createReadStream(file, { highWaterMark });
+	// const stat = fs.statSync(file);
+	
+	// readable.on('data', function(chunk) {
+	// 	channel.emit('audio stream', chunk);
+	// });
+	// end audio stream
+
+  	channel.onDisconnect(() => {
 		console.log(`${channel.id} got disconnected`)
 	})
 
