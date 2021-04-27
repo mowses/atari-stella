@@ -38,108 +38,84 @@ class socket {
 
         echo "Socket listen OK \n";
 
-        echo "Waiting for incoming connections... \n";
-
         //array of client sockets
         socket::$client_socks = array();
     }
 
     function accept_multi_client() {
         //prepare array of readable client sockets
-        socket::$read = array();
+        socket::$read = array_filter(socket::$client_socks);
 
         //first socket is the master socket
-        socket::$read[0] = socket::$sock;
+        array_unshift(socket::$read, socket::$sock);
 
-        //now add the existing client sockets
-        for ($i = 0; $i < socket::$max_clients; $i++) {
-            if (socket::$client_socks[$i] != null) {
-                socket::$read[$i + 1] = socket::$client_socks[$i];
-            }
+        //now call select - non blocking call
+        if (socket_select(socket::$read, $write, $except, 0) === false) {
+            return;
         }
 
-        //now call select - blocking call
-        if (socket_select(socket::$read, $write, $except, null) === false) {
-            $errorcode = socket_last_error();
-            $errormsg = socket_strerror($errorcode);
+        if (!in_array(socket::$sock, socket::$read)) return;
+        
+        // read contains the master socket, then a new connection has come in
+        
+        if (count(socket::$client_socks) >= socket::$max_clients) return;
+        
+        socket::$client_socks[] = $client_sock = socket_accept(socket::$sock);
 
-            print("Could not listen on socket : [$errorcode] $errormsg \n");
+        //display information about the client who is connected
+        if (socket_getpeername($client_sock, $address, $port)) {
+            echo "Client $address : $port is now connected to us. \n";
         }
 
-        //if ready contains the master socket, then a new connection has come in
-        if (in_array(socket::$sock, socket::$read)) {
-            for ($i = 0; $i < socket::$max_clients; $i++) {
-                if (socket::$client_socks[$i] == null) {
-                    socket::$client_socks[$i] = socket_accept(socket::$sock);
+        // send welcome message to client
+        // $message = "\nEnter a message and press enter, and i shall reply back \n";
+        // socket_write($client_sock, $message);
+    }
+    
+    /**
+     * broadcast data to connected clients
+     */
+    function broadcast_to_clients($str) {
+        foreach (socket::$client_socks as $i => $socket) {
+            $wr = socket_write($socket, $str);
 
-                    //display information about the client who is connected
-                    if (socket_getpeername(socket::$client_socks[$i], $address, $port)) {
-                        echo "Client $address : $port is now connected to us. \n";
-                    }
-
-                    //Send Welcome message to client
-                    $message = "\nEnter a message and press enter, and i shall reply back \n";
-                    socket_write(socket::$client_socks[$i], $message);
-                    break;
-                }
+            if ($wr === false) {
+                // false meaning error, so lets close and remove the socket
+                socket_shutdown($socket, 2);
+                socket_close($socket);
+                unset(socket::$client_socks[$i]);
+                continue;
             }
         }
     }
 
-    function speak() {
+    // function do_anything($client_input, $i) {
 
-        for ($i = 0; $i < socket::$max_clients; $i++) {
-            if (in_array(socket::$client_socks[$i], socket::$read)) {
-
-                $client_input = socket_read(socket::$client_socks[$i], 1024);
-                
-                if ($client_input == null) {
-                    //zero length string meaning disconnected, remove and close the socket
-                    socket_close(socket::$client_socks[$i]);
-                    unset(socket::$client_socks[$i]);
-                    continue;
-                }
-
-                $output = "The server replied back: $client_input";
-
-                echo "A client sent: $client_input";
-
-                //$output = $this->do_anything($client_input, $i);
-               // echo $output;
-                //send response to client
-                socket_write(socket::$client_socks[$i], $output);
-                //socket_close(socket::$client_socks[$i]);
-            }
-        }
-    }
-
-    function do_anything($client_input, $i) {
-
-        $filename = 'ee.mp3';
-        ob_start();
-        //ob_end_clean();
-            if (file_exists($filename)) {
-                print('HTTP/1.1 200 OK'."\n");
-                print('Content-Type: audio/mpeg'." ");
-                print('Content-Disposition: filename="test.mp3"'."\n");
-                print('Content-length: ' . 1129297 ."\n");
-                /*print('Cache-Control: no-cache'." ");
-                print("Content-Transfer-Encoding: chunked"." ");*/
+    //     $filename = 'ee.mp3';
+    //     ob_start();
+    //     //ob_end_clean();
+    //         if (file_exists($filename)) {
+    //             print('HTTP/1.1 200 OK'."\n");
+    //             print('Content-Type: audio/mpeg'." ");
+    //             print('Content-Disposition: filename="test.mp3"'."\n");
+    //             print('Content-length: ' . 1129297 ."\n");
+    //             print('Cache-Control: no-cache'." ");
+    //             print("Content-Transfer-Encoding: chunked"." ");
 
 
 
-                $handle = fopen($filename, "r");
-                $contents = fread($handle, filesize($filename));
+    //             $handle = fopen($filename, "r");
+    //             $contents = fread($handle, filesize($filename));
 
-            } else {
-                print("HTTP/1.0 404 Not Found");
-            }
+    //         } else {
+    //             print("HTTP/1.0 404 Not Found");
+    //         }
 
-            $out = ob_get_contents();
+    //         $out = ob_get_contents();
 
-        //ob_end_clean();
+    //     //ob_end_clean();
 
-        return $out.$contents;
-    }
+    //     return $out.$contents;
+    // }
 
 }
