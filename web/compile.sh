@@ -1,11 +1,15 @@
 tput reset;
 sudo kill -9 $(pgrep -f 'app-geckos-server.js');
+sudo kill -9 $(pgrep -f 'php -S localhost:2001');
 sudo node app-geckos-server.js > /tmp/app-geckos-server.log & echo "Node server started ...";
 
 /home/unknown/stella/configure &&
 make -C /home/unknown/stella &&
 bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001' &
-firefox http://localhost/stella/web/render_web.html &&
+bash -c 'cd /home/unknown/stella/web; exec php socket.php > /tmp/socket.log' &
+sleep 1;  # wait for http server to be ready
+curl http://localhost:2001/php-audio.php > /tmp/php-audio.mp3 &
+firefox http://localhost:2001/render_web.html &&
 exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Enduro\ \(USA\).zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/River\ Raid\ \(USA\).zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Seaquest.zip &
