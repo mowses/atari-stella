@@ -1,6 +1,6 @@
 <?php
 
-class socket {
+class Socket {
 
     public static $address = IP;
     public static $port = PORT;
@@ -88,34 +88,4 @@ class socket {
             }
         }
     }
-
-    // function do_anything($client_input, $i) {
-
-    //     $filename = 'ee.mp3';
-    //     ob_start();
-    //     //ob_end_clean();
-    //         if (file_exists($filename)) {
-    //             print('HTTP/1.1 200 OK'."\n");
-    //             print('Content-Type: audio/mpeg'." ");
-    //             print('Content-Disposition: filename="test.mp3"'."\n");
-    //             print('Content-length: ' . 1129297 ."\n");
-    //             print('Cache-Control: no-cache'." ");
-    //             print("Content-Transfer-Encoding: chunked"." ");
-
-
-
-    //             $handle = fopen($filename, "r");
-    //             $contents = fread($handle, filesize($filename));
-
-    //         } else {
-    //             print("HTTP/1.0 404 Not Found");
-    //         }
-
-    //         $out = ob_get_contents();
-
-    //     //ob_end_clean();
-
-    //     return $out.$contents;
-    // }
-
 }
