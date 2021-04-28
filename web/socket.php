@@ -6,12 +6,12 @@ set_time_limit(60);
 // UDP server socket definition
 define('UDP_IP', 'localhost');
 define('UDP_PORT', 3002);
-define('UDP_BUFFER', 512);
+define('UDP_BUFFER', 128 * 1024);
 
 // client socket connection definition
 // clients should connect here!
 define('IP', 'localhost');
-define('PORT', '5000');
+define('PORT', 5000);
 define('MAX_CLIENT', 10);
 
 require_once 'lib/socket.php';
@@ -33,7 +33,7 @@ if( !socket_bind($sock, UDP_IP, UDP_PORT) )
     die("Could not bind socket : [$errorcode] $errormsg \n");
 }
 
-$socket = new socket();
+$socket = new Socket();
 $socket->run();
 
 echo "Waiting for UDP data and client connections... \n";
