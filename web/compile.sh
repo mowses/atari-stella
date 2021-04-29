@@ -1,37 +1,66 @@
-tput reset;
-sudo kill -9 $(pgrep -f 'app-geckos-server.js');
-sudo kill -9 $(pgrep -f 'php -S localhost:2001');
-sudo node app-geckos-server.js > /tmp/app-geckos-server.log & echo "Node server started ...";
+##############################
+HOST='localhost';
+PORT=3002;
+##############################
+function destruct()
+{
+	if [ $FFMPEG_PID ]; then
+		sudo kill -9 $FFMPEG_PID;
+	fi;
 
-/home/unknown/stella/configure &&
-make -C /home/unknown/stella &&
-bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001' &
+	sudo kill -9 $(pgrep -f 'php socket.php');
+	sudo kill -9 $(pgrep -f 'app-geckos-server.js');
+	sudo kill -9 $(pgrep -f 'php -S localhost');
+	
+	if [ $SINK ]; then
+		pactl unload-module $SINK;
+	fi;
+
+	# remove all null-sink
+	# pactl unload-module module-null-sink;
+}
+
+function get_sink_source_index()
+{
+	echo -n $(pactl list sources | perl -nle '/Source #(\d+)/ and $si = $1; /Owner Module: (\d+)/ and ($1 == '$SINK') and print "$si"');
+}
+##############################
+clear;
+destruct > /dev/null 2>&1;
+
+# start node server
+sudo node app-geckos-server.js > /tmp/app-geckos-server.log &
+echo "Node server started ...";
+
+# create audio sink for this game session
+SINK=$(pactl load-module module-null-sink sink_name='stella-null-sink');
+echo 'AUDIO SINK FOR THIS SESSION: '$SINK' WITH ID: #'$(get_sink_source_index);
+# list sinks command reference: pactl list short sinks
+
+# run game session
+#/home/unknown/stella/configure &&
+#make -C /home/unknown/stella &&
+bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001 > /tmp/stella-http-server.log 2>&1' &
 bash -c 'cd /home/unknown/stella/web; exec php socket.php > /tmp/socket.log' &
 sleep 1;  # wait for http server to be ready
-curl http://localhost:2001/php-audio.php > /tmp/php-audio.mp3 &
-firefox http://localhost:2001/render_web.html &&
-exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Enduro\ \(USA\).zip &
+
+# test audio and open browser
+curl -s http://localhost:2001/php-audio.php > /tmp/php-audio.webm &
+firefox http://localhost:2001/render_web.html &
+exec /home/unknown/stella/stella -holdreset -audio.device -1 /home/unknown/Downloads/Enduro\ \(USA\).zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/River\ Raid\ \(USA\).zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Seaquest.zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Turmoil\ \(USA\).zip &
+STELLA_PID=$!;
+echo 'STELLA PID:' $STELLA_PID;
 
-LASTPID=$!;
-SINK_INPUT='';
-while [ -z "$SINK_INPUT" ]; do
-	SINK_INPUT=$(pactl list sink-inputs | perl -nle '/Sink Input #(\d+)/ and $si = $1; /application\.process\.id.*?(\d+)/ and ($1 == '$LASTPID') and print "$si"');
-	#echo 'current SINK_INPUT is ' $SINK_INPUT 'and LASTPID is ' $LASTPID "\n";
-	sleep 1;
-done
+# record and send sound to UDP
+exec ffmpeg -loglevel error -vn -f pulse -i $(get_sink_source_index) -ar 44100 -ac 1 -b:a 32k -preset ultrafast -f mpegts udp://$HOST:$PORT &
+FFMPEG_PID=$!;
 
-# grava o som tocado
-#parec --monitor-stream  $(pacmd list-sink-inputs|tac|perl -E'undef$/;$_=<>;/RUNNING.*?index: (\d+)\n/s;say $1') --format=s16le --channels=2 --file-format=aiff newrecording.aiff
-
-# dá output no netcat UDP porta 3002
-#mas antes, rodar o comando:
-#nc -lu localhost 3002 | paplay --verbose --raw --format=s16le --channels=1;
-
-# mute game instance audio - should not mute it :(
-pactl set-sink-input-mute $SINK_INPUT 0;
-
-# send sound over netcat
-parec --monitor-stream $SINK_INPUT --format=s16le --channels=1 | ffmpeg -f s16le -ar 44100 -ac 1 -i pipe: -b:a 128k -f webm pipe: | nc -u localhost 3002;
+echo 'Waiting for game to finish ...';
+while [ -d /proc/$STELLA_PID ] ; do
+	sleep 1
+done;
+echo 'GAME WAS FINISHED...';
+destruct > /dev/null 2>&1;
