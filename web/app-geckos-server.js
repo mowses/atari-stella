@@ -14,6 +14,8 @@ const io = geckos({
 // listen on port 3000 (default is 9208)
 io.listen(3000)
 
+server.bind(port, address);
+
 io.onConnection(channel => {
 
 	// // audio stream
@@ -48,7 +50,5 @@ io.onConnection(channel => {
 		const address = server.address();
 		console.log(`server listening ${address.address}:${address.port}`);
 	});
-
-	server.bind(port, address);
 
 })
