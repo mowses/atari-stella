@@ -631,7 +631,7 @@ class TIA : public Device
      */
     bool openSocket();
 
-    std::string to_zero_lead(const int value, const unsigned precision);
+    std::string to_zero_lead(const uInt32 value, const unsigned precision);
 
     /**
      * Send udp data packets if STREAM_SUPPORT
@@ -640,6 +640,7 @@ class TIA : public Device
 
     sockaddr_in servaddr;
     int fd;
+    uInt32 packetSequence;
     /**
      * end UDP send
      */

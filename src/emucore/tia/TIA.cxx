@@ -180,6 +180,7 @@ void TIA::initialize()
 #endif
 
 #ifdef STREAM_SUPPORT
+  packetSequence = 4294967095;
   close(fd);
   openSocket();
 #endif
@@ -1399,8 +1400,9 @@ void TIA::onFrameComplete()
 
   #ifdef STREAM_SUPPORT
     uInt32 last = 99999;
-    string msg_str;
+    string msg_str = to_zero_lead(++packetSequence, 10);
 
+    // cerr << "packetSequence: " + std::to_string(packetSequence) + " - msg_str for packetSequence:" + msg_str + "\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + "====\n";
     // cerr << std::to_string(myFrontBuffer.size()) + "\n";
@@ -1419,7 +1421,7 @@ void TIA::onFrameComplete()
   #endif
 }
 
-std::string TIA::to_zero_lead(const int value, const unsigned precision)
+std::string TIA::to_zero_lead(const uInt32 value, const unsigned precision)
 {
      std::ostringstream oss;
      oss << std::setw(precision) << std::setfill('0') << value;
