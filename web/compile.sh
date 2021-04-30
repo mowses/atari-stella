@@ -28,26 +28,27 @@ function get_sink_source_index()
 clear;
 destruct > /dev/null 2>&1;
 
-# start node server
-sudo node app-geckos-server.js > /tmp/app-geckos-server.log &
+# start servers
+sudo node app-geckos-server.js > /tmp/stella-geckos-server.log 2>&1 &
 echo "Node server started ...";
+bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001 > /tmp/stella-http-server.log 2>&1' &
+bash -c 'cd /home/unknown/stella/web; exec php socket.php > /tmp/stella-socket.log 2>&1' &
+sleep 1;  # wait for http server to be ready
+
 
 # create audio sink for this game session
 SINK=$(pactl load-module module-null-sink sink_name='stella-null-sink');
 echo 'AUDIO SINK FOR THIS SESSION: '$SINK' WITH ID: #'$(get_sink_source_index);
 # list sinks command reference: pactl list short sinks
 
-# run game session
+# (re)compile game
 #/home/unknown/stella/configure &&
-#make -C /home/unknown/stella &&
-bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001 > /tmp/stella-http-server.log 2>&1' &
-bash -c 'cd /home/unknown/stella/web; exec php socket.php > /tmp/socket.log' &
-sleep 1;  # wait for http server to be ready
+#make -C /home/unknown/stella;
 
 # test audio and open browser
-curl -s http://localhost:2001/php-audio.php > /tmp/php-audio.webm &
+#curl -s http://localhost:2001/php-audio.php > /tmp/php-audio.webm &
 firefox http://localhost:2001/render_web.html &
-exec /home/unknown/stella/stella -holdreset -audio.device -1 /home/unknown/Downloads/Enduro\ \(USA\).zip &
+exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.port "23" -audio.device -1 "/home/unknown/Downloads/Enduro (USA).zip" &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/River\ Raid\ \(USA\).zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Seaquest.zip &
 #exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Turmoil\ \(USA\).zip &

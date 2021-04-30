@@ -49,25 +49,28 @@
     <source src="http://localhost:2001/php-audio.php" type="audio/mp3">
   </audio> -->
   <script>
-    //console.log(output, 'continuar daquie. fazer com que o output seja rapidamente interpretado pelo render. estou pesquisando sobre como o javascript poderia ler os bytes de output, mas nao sei se é possivel de fazer isso');
     var canvas = document.getElementById('enduro');
     var ctx = canvas.getContext('2d', { alpha: false });
     var pixels_image = ctx.getImageData(0, 0, canvas.width, canvas.height);
     
     ctx.fillStyle = '#000000';
 
-    function render(ctx, pixels_image, output, colors)
+    function render(output)
     {
-        const width = pixels_image.width;
-        const height = pixels_image.height;
+        const _pixels_image = pixels_image;
+        const _ctx = ctx;
+        const _output = output;
+        const _colors = colors;
+        const _width = _pixels_image.width;
+        const _height = _pixels_image.height;
 
-        var pixels = pixels_image.data;
+        var pixels = _pixels_image.data;
         var last;
 
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                let index = x + y * width;
-                let output_index = output[index];
+        for (let y = 0; y < _height; y++) {
+            for (let x = 0; x < _width; x++) {
+                let index = x + y * _width;
+                let output_index = _output[index];
                 
                 if (output_index === undefined) {
                     // missing pixel
@@ -75,10 +78,10 @@
                 }
 
                 let offset = index * 4;
-                let color = colors[output_index];
+                let color = _colors[output_index];
 
                 if (color === undefined) {
-                  console.log(index, output_index, last, output);
+                  console.log('undefined color', index, output_index, last, _output);
                   return;
                 }
                 
@@ -90,16 +93,16 @@
             }
         }
         
-        ctx.putImageData(pixels_image, 0, 0);
+        _ctx.putImageData(_pixels_image, 0, 0);
     }
 
     // setInterval(function() {
-    //     var colors = random_colors(255);
+    //     colors = random_colors(255);
     //     var _output = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
-    //     render(ctx, pixels_image, _output, colors);
+    //     render(_output);
     // }, 1000);
   </script>
-  <!-- <script src="./app-geckos-client.js"></script> -->
+  <script src="./app-geckos-client.js"></script>
   <script type="text/javascript">
     // abaixo funcionou
     // window.addEventListener('load', function () {
