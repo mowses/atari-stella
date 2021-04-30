@@ -8,7 +8,7 @@ function destruct()
 		sudo kill -9 $FFMPEG_PID;
 	fi;
 
-	sudo kill -9 $(pgrep -f 'php socket.php');
+	sudo kill -9 $(pgrep -f 'php audio-socket.php');
 	sudo kill -9 $(pgrep -f 'app-geckos-server.js');
 	sudo kill -9 $(pgrep -f 'php -S localhost');
 	
@@ -32,7 +32,7 @@ destruct > /dev/null 2>&1;
 sudo node app-geckos-server.js > /tmp/stella-geckos-server.log 2>&1 &
 echo "Node server started ...";
 bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001 > /tmp/stella-http-server.log 2>&1' &
-bash -c 'cd /home/unknown/stella/web; exec php socket.php > /tmp/stella-socket.log 2>&1' &
+bash -c 'cd /home/unknown/stella/web; exec php audio-socket.php > /tmp/stella-audio-socket.log 2>&1' &
 sleep 1;  # wait for http server to be ready
 
 

@@ -9,6 +9,8 @@ class Socket {
     public static $sock;
     public static $read;
 
+    public $sequence_wrap_around = 32768;
+
     function run() {
         if (!(socket::$sock = socket_create(AF_INET, SOCK_STREAM, 0))) {
             $errorcode = socket_last_error();
@@ -87,5 +89,21 @@ class Socket {
                 continue;
             }
         }
+    }
+
+    /**
+     * if your UDP socket is sending a control sequence number
+     * use this method to make check if the sequence number were
+     * wrapped around.
+     * 
+     * ex: if you sent a sequence number as UINT16 (0-65535)
+     * and the current packet is 65535, then the next packet
+     * will wrap around, returning to ZERO, but
+     * in this case, the packet 0 is greater than 65535
+     */
+    public function current_is_greater_than(int $s1, int $s2): bool
+    {
+        return (($s1 > $s2) && ($s1 - $s2 <= $this->sequence_wrap_around)) ||
+               (($s1 < $s2) && ($s2 - $s1 > $this->sequence_wrap_around));
     }
 }
