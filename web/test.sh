@@ -6,10 +6,11 @@ OUTPUT1='/tmp/output1.webm';
 OUTPUT2='/tmp/output2.webm';
 #################
 function clear_all () {
-	sudo kill -9 $(pgrep -f 'php php-audio');
 	sudo kill -9 $(pgrep -f 'Kamen_Rider_Black_RX_OP');
 	sudo kill -9 $(pgrep -f 'nc -');
-	sudo kill -9 $(pgrep -f 'php socket.php');
+	sudo kill -9 $(pgrep -f 'php audio-socket.php');
+	sudo kill -9 $(pgrep -f 'php -S localhost');
+	sudo kill -9 $(pgrep -f 'php php-audio');
 }
 #################
 tput reset;
@@ -25,8 +26,8 @@ done
 echo 'LASTPID:' $LASTPID;
 echo 'SINK_INPUT:' $SINK_INPUT;
 
-php socket.php &
-php php-audio.php > $OUTPUT1 &
+php audio-socket.php &
+cd /home/unknown/stella/web && php -S localhost:2001 2> /dev/null &
 
 # nc -lu $HOST $PORT > $OUTPUT1 &
 # echo 'Listening on '$HOST':'$PORT;
@@ -35,14 +36,16 @@ php php-audio.php > $OUTPUT1 &
 # send sound to UDP
 parec --monitor-stream $SINK_INPUT --format=s16le --channels=1 | ffmpeg -vn -f s16le -ar 44100 -ac 1 -i pipe: -b:a 32k -preset ultrafast -f mpegts udp://$HOST:$PORT 2> /dev/null &
 echo 'STREAMING AUDIO TO '$HOST':'$PORT'...';
+
+php php-audio.php > $OUTPUT1 &
+echo 'Recording for output 1 ...';
 sleep 7;
 
 php php-audio.php > $OUTPUT2 &
-sleep 2;
 echo 'Recording for output 2 ...';
 sleep 7;
 
-
+echo '' && echo 'killing...';
 clear_all > /dev/null 2>&1;
 echo 'Output 1 saved at' $OUTPUT1;
 echo 'Output 2 saved at' $OUTPUT2;

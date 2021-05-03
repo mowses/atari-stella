@@ -57,7 +57,7 @@ STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;
 
 # record and send sound to UDP
-exec ffmpeg -loglevel error -vn -f pulse -i $(get_sink_source_index) -ar 44100 -ac 1 -b:a 32k -preset ultrafast -f mpegts udp://$HOST:$PORT &
+exec ffmpeg -loglevel quiet -vn -f pulse -i $(get_sink_source_index) -ar 44100 -ac 1 -b:a 32k -preset ultrafast -f mpegts udp://$HOST:$PORT &
 FFMPEG_PID=$!;
 
 echo 'Waiting for game to finish ...';

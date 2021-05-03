@@ -36,7 +36,7 @@ if( !socket_bind($sock, UDP_IP, UDP_PORT) )
 $socket = new Socket();
 $socket->run();
 
-echo "Waiting for UDP data and client connections... \n";
+echo "Waiting for UDP data in " . UDP_IP . ":" . UDP_PORT . " and client connections in " . IP . ":" . PORT .  "... \n";
 
 while($buf = socket_read($sock, UDP_BUFFER))
 {
