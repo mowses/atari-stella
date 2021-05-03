@@ -47,11 +47,12 @@ echo 'AUDIO SINK FOR THIS SESSION: '$SINK' WITH ID: #'$(get_sink_source_index);
 
 # test audio and open browser
 #curl -s http://localhost:2001/php-audio.php > /tmp/php-audio.webm &
+ROM="/home/unknown/Downloads/Enduro (USA).zip";
+#ROM="/home/unknown/Downloads/River Raid (USA).zip";
+#ROM="/home/unknown/Downloads/Seaquest.zip";
+#ROM="/home/unknown/Downloads/Turmoil (USA).zip";
 firefox http://localhost:2001/render_web.html &
-exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.port "23" -audio.device -1 "/home/unknown/Downloads/Enduro (USA).zip" &
-#exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/River\ Raid\ \(USA\).zip &
-#exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Seaquest.zip &
-#exec /home/unknown/stella/stella -holdreset /home/unknown/Downloads/Turmoil\ \(USA\).zip &
+exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.port "23" -audio.device -1 "$ROM" &
 STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;
 
