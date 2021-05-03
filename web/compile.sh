@@ -11,6 +11,7 @@ function destruct()
 	sudo kill -9 $(pgrep -f 'php audio-socket.php');
 	sudo kill -9 $(pgrep -f 'app-geckos-server.js');
 	sudo kill -9 $(pgrep -f 'php -S localhost');
+	sudo kill -9 $(pgrep -f 'ffmpeg -loglevel quiet');
 	
 	if [ $SINK ]; then
 		pactl unload-module $SINK;
