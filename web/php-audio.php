@@ -44,6 +44,8 @@ header('Content-Transfer-Encoding: chunked');
 
 //echo shell_exec('nc 127.0.0.1 5000 &');
 
+// define('SINK_INPUT', 84);
+// $cmd = 'parec --monitor-stream ' . SINK_INPUT . ' --format=s16le --channels=1 | ffmpeg -vn -loglevel quiet -y -f s16le -ar 44100 -ac 1 -i pipe: -b:a 32k -preset ultrafast -f mp3 pipe:';
 $cmd = 'ffmpeg -vn -loglevel quiet -y -i tcp://' . HOST . ':' . PORT . ' -ac 1 -b:a 8k -f mp3 pipe: < /dev/null 2> /dev/null';
 
 $descriptorspec = [

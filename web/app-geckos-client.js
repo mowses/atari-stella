@@ -7,7 +7,7 @@ function current_is_greater_than(s1, s2)
 }
 
 // pass the port and url of the server
-var channel = geckos({ port: 3000, url: 'http://localhost' })
+var channel = geckos({ port: 3000, url: window.location.protocol + '//' + window.location.hostname })
 
 channel.onConnect(function(error) {
 
@@ -15,7 +15,7 @@ channel.onConnect(function(error) {
 	var last_sequence = -1;
 
 	if (error) {
-		console.log('ERROR connecting!');
+		console.log('ERROR connecting!', error.message);
 		//console.error(error.message)
 		return
 	} else {
@@ -45,6 +45,7 @@ channel.onConnect(function(error) {
 		to = setTimeout(function() {
 			let cc = String.fromCharCode;
 			let current_sequence = +(data.data.splice(0, 10).map( cp => cc( cp ) ).join(''));
+			current_id.value = current_sequence;
 			if (current_sequence < last_sequence) {
 				if (!current_is_greater(current_sequence, last_sequence)) {
 					console.log('received old data... discarding:', current_sequence, last_sequence);
