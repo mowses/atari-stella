@@ -43,12 +43,14 @@
 <body>
 
   <canvas id="enduro" width="160" height="228"></canvas>
-  <audio src="http://localhost:2001/php-audio.php" type='audio/mp3' controls preload="none"></audio>
+  <input type="text" id="current_id" />
+  <!-- <audio src="http://localhost:2001/php-audio.php" type='audio/mp3' controls preload="none"></audio> -->
 
   <!-- <audio controls>
     <source src="http://localhost:2001/php-audio.php" type="audio/mp3">
   </audio> -->
   <script>
+    var current_id = document.getElementById('current_id');
     var canvas = document.getElementById('enduro');
     var ctx = canvas.getContext('2d', { alpha: false });
     var pixels_image = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -103,25 +105,51 @@
     // }, 1000);
   </script>
   <script src="./app-geckos-client.js"></script>
+  <!-- <script type="text/javascript">
+    //abaixo funcionou
+    window.addEventListener('load', function () {
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        var source = audioCtx.createBufferSource();
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'Kamen_Rider_Black_RX_OP.mp3');
+        xhr.responseType = 'arraybuffer';
+        xhr.addEventListener('load', function (r) {
+            audioCtx.decodeAudioData(
+                    xhr.response, 
+                    function (buffer) {
+                        source.buffer = buffer;
+                        source.connect(audioCtx.destination);
+                        source.loop = false;
+                    });
+            source.start(0);
+        });
+        xhr.send();
+    });
+  </script> -->
   <script type="text/javascript">
-    // abaixo funcionou
+    function play_audio(buffer)
+    {
+        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let myArrayBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+        // This gives us the actual array that contains the data
+        let nowBuffering = myArrayBuffer.getChannelData(0);
+        for (var i = 0, t = buffer.length; i < t; i++) {
+            nowBuffering[i] = buffer[i];
+        }
+
+        let source = audioCtx.createBufferSource();
+        source.buffer = myArrayBuffer;
+        source.connect(audioCtx.destination);
+        source.loop = false;
+        source.start(0);
+    }
+
     // window.addEventListener('load', function () {
-    //     var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    //     var source = audioCtx.createBufferSource();
-    //     var xhr = new XMLHttpRequest();
-    //     xhr.open('GET', 'php-audio.php');
-    //     xhr.responseType = 'arraybuffer';
-    //     xhr.addEventListener('load', function (r) {
-    //         audioCtx.decodeAudioData(
-    //                 xhr.response, 
-    //                 function (buffer) {
-    //                     source.buffer = buffer;
-    //                     source.connect(audioCtx.destination);
-    //                     source.loop = false;
-    //                 });
-    //         source.start(0);
-    //     });
-    //     xhr.send();
+    //     let buffer = [];
+    //     for (var i = 0; i < 50000; i++) {
+    //         buffer[i] = Math.random() * 2 - 1;
+    //     }
+    //     play_audio(buffer);
     // });
   </script>
 </body>
