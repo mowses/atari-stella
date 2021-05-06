@@ -10,7 +10,6 @@ function destruct()
 
 	sudo kill -9 $(pgrep -f 'php audio-socket.php');
 	sudo kill -9 $(pgrep -f 'app-geckos-server.js');
-	sudo kill -9 $(pgrep -f 'php -S localhost');
 	sudo kill -9 $(pgrep -f 'ffmpeg -loglevel quiet');
 	
 	if [ $SINK ]; then
@@ -32,7 +31,6 @@ destruct > /dev/null 2>&1;
 # start servers
 sudo node app-geckos-server.js > /tmp/stella-geckos-server.log 2>&1 &
 echo "Node server started ...";
-bash -c 'cd /home/unknown/stella/web; exec php -S localhost:2001 > /tmp/stella-http-server.log 2>&1' &
 bash -c 'cd /home/unknown/stella/web; exec php audio-socket.php > /tmp/stella-audio-socket.log 2>&1' &
 sleep 1;  # wait for http server to be ready
 
@@ -52,7 +50,7 @@ ROM="/home/unknown/Downloads/Enduro (USA).zip";
 #ROM="/home/unknown/Downloads/River Raid (USA).zip";
 #ROM="/home/unknown/Downloads/Seaquest.zip";
 #ROM="/home/unknown/Downloads/Turmoil (USA).zip";
-firefox http://localhost:2001/render_web.html &
+firefox http://localhost/stella/web/render_web.html &
 exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.port "23" -audio.device -1 "$ROM" &
 STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;

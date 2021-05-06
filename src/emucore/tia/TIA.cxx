@@ -180,7 +180,7 @@ void TIA::initialize()
 #endif
 
 #ifdef STREAM_SUPPORT
-  packetSequence = 4294967095;
+  packetSequence = 0;
   close(fd);
   openSocket();
 #endif
