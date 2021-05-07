@@ -23,11 +23,16 @@ class AudioQueue;
 #include "bspf.hxx"
 #include "AudioChannel.hxx"
 #include "Serializable.hxx"
+#include "Settings.hxx"
+
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 class Audio : public Serializable
 {
   public:
-    Audio();
+    Audio(Settings& settings);
 
     void reset();
 
@@ -60,6 +65,32 @@ class Audio : public Serializable
     void phase1();
     void addSample(uInt8 sample0, uInt8 sample1);
 
+    /**
+     * ** SOCKET **
+     */
+    /**
+     * Open socket connection
+     */
+    bool openSocket();
+
+    Int8 findIndex(Int16 value);
+
+    std::string to_zero_lead(const uInt32 value, const unsigned precision);
+
+    Settings& mySettings;
+
+    /**
+     * Send udp data packets if STREAM_SUPPORT
+     */
+    bool udpSend(const char *msg);
+
+    sockaddr_in servaddr;
+    int fd;
+    uInt32 packetSequence;
+    /**
+     * end UDP send
+     */
+    
   private:
     shared_ptr<AudioQueue> myAudioQueue;
 

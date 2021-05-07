@@ -51,7 +51,7 @@ ROM="/home/unknown/Downloads/Enduro (USA).zip";
 #ROM="/home/unknown/Downloads/Seaquest.zip";
 #ROM="/home/unknown/Downloads/Turmoil (USA).zip";
 firefox http://localhost/stella/web/render_web.html &
-exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.port "23" -audio.device -1 "$ROM" &
+exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.vport "23" -stream.aport "24" -audio.device -1 "$ROM" &
 STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;
 

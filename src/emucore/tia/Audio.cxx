@@ -33,7 +33,8 @@ namespace {
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Audio::Audio()
+Audio::Audio(Settings& settings):
+mySettings{settings}
 {
   for (uInt8 i = 0; i <= 0x1e; ++i) myMixingTableSum[i] = mixingTableEntry(i, 0x1e);
   for (uInt8 i = 0; i <= 0x0f; ++i) myMixingTableIndividual[i] = mixingTableEntry(i, 0x0f);
@@ -49,6 +50,12 @@ void Audio::reset()
 
   myChannel0.reset();
   myChannel1.reset();
+
+  #ifdef STREAM_SUPPORT
+    packetSequence = 0;
+    close(fd);
+    openSocket();
+  #endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,9 +114,87 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
   }
 
   if(++mySampleIndex == myAudioQueue->fragmentSize()) {
+    #ifdef STREAM_SUPPORT
+      // my gambi
+      Int16 last = 0;
+      string msg_str = "";
+      for (std::size_t i = 0; i < mySampleIndex; ++i) {
+        if (myCurrentFragment[i] == last) continue;
+        
+        // o correto seria usar 10 (comprimento de uInt32) ao inves de 5 para i
+        // mas quero economizar trafego na rede
+        // se tiver problemas no recebimento dos dados, deve-se entao, alterar aqui
+        msg_str = msg_str + to_zero_lead(i, 5) + to_zero_lead(findIndex(myCurrentFragment[i]), 2);
+        // cerr << "myCurrentFragment[" << std::to_string(i) << "] = " << std::to_string(myCurrentFragment[i]);
+        // cerr << "-last was:" << std::to_string(last);
+        // cerr << "-INDEX IS:" << std::to_string(findIndex(myCurrentFragment[i]));
+        // cerr << "\n";
+        last = myCurrentFragment[i];
+      }
+      if (msg_str != "") {
+        msg_str = to_zero_lead(++packetSequence, 10) + msg_str;
+        // cerr << msg_str;
+        udpSend(msg_str.c_str());
+      }
+    #endif
+
+
     mySampleIndex = 0;
     myCurrentFragment = myAudioQueue->enqueue(myCurrentFragment);
   }
+}
+
+bool Audio::openSocket(){
+  fd = socket(AF_INET,SOCK_DGRAM,0);
+  if(fd<0){
+      cerr << "cannot open socket";
+      return false;
+  }
+
+  bzero(&servaddr,sizeof(servaddr));
+  servaddr.sin_family = AF_INET;
+  servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
+  servaddr.sin_port = htons(mySettings.getInt("stream.aport"));
+
+  return true;
+}
+
+bool Audio::udpSend(const char *msg){
+    if (sendto(fd, msg, strlen(msg), 0,
+               (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
+        //cerr << "cannot send message";
+        return false;
+    }
+    return true;
+}
+
+std::string Audio::to_zero_lead(const uInt32 value, const unsigned precision)
+{
+     std::ostringstream oss;
+     oss << std::setw(precision) << std::setfill('0') << value;
+     return oss.str();
+}
+Int8 Audio::findIndex(Int16 value)
+{
+  if (myAudioQueue->isStereo()) {
+    auto list = myMixingTableIndividual;
+    std::size_t t = list.size();
+    for (std::size_t i = 0; i < t; ++i) {
+      if (list[i] == value) {
+        return i;
+      }
+    }
+  } else {
+    auto list = myMixingTableSum;
+    std::size_t t = list.size();
+    for (std::size_t i = 0; i < t; ++i) {
+      if (list[i] == value) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
