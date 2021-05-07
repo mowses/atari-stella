@@ -79,7 +79,8 @@ TIA::TIA(ConsoleIO& console, const ConsoleTimingProvider& timingProvider,
     myMissile1{~CollisionMask::missile1 & 0x7FFF},
     myPlayer0{~CollisionMask::player0 & 0x7FFF},
     myPlayer1{~CollisionMask::player1 & 0x7FFF},
-    myBall{~CollisionMask::ball & 0x7FFF}
+    myBall{~CollisionMask::ball & 0x7FFF},
+    myAudio{settings}
 {
   myBackground.setTIA(this);
   myPlayfield.setTIA(this);
@@ -1373,11 +1374,11 @@ void TIA::onFrameComplete()
   ++myFramesSinceLastRender;
 
   #ifdef STREAM_SUPPORT
-    uInt32 last = 99999;
-    string msg_str = to_zero_lead(++packetSequence, 10);
+    uInt32 last = 0;
+    string msg_str = "";
 
     // cerr << "packetSequence: " + std::to_string(packetSequence) + " - msg_str for packetSequence:" + msg_str + "\n";
-    // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.port")) + "====\n";
+    // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.vport")) + "====\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + "====\n";
     // cerr << std::to_string(myFrontBuffer.size()) + "\n";
     std::size_t t = myFrontBuffer.size();
@@ -1389,8 +1390,12 @@ void TIA::onFrameComplete()
       last = myFrontBuffer[i];
     }
 
-    //msg_str = std::to_string(myFrontBuffer[i]) + std::to_string(i);
-    udpSend(msg_str.c_str());
+    if (msg_str != "") {
+      msg_str = to_zero_lead(++packetSequence, 10) + msg_str;
+      //msg_str = std::to_string(myFrontBuffer[i]) + std::to_string(i);
+      udpSend(msg_str.c_str());
+
+    }
 
   #endif
 }
@@ -1412,7 +1417,7 @@ bool TIA::openSocket(){
   bzero(&servaddr,sizeof(servaddr));
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
-  servaddr.sin_port = htons(mySettings.getInt("stream.port"));
+  servaddr.sin_port = htons(mySettings.getInt("stream.vport"));
 
   return true;
 }
@@ -1420,7 +1425,7 @@ bool TIA::openSocket(){
 bool TIA::udpSend(const char *msg){
     if (sendto(fd, msg, strlen(msg), 0,
                (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
-        cerr << "cannot send message";
+        //cerr << "cannot send message";
         return false;
     }
     return true;
