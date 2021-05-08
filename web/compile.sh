@@ -4,10 +4,6 @@ PORT=3002;
 ##############################
 function destruct()
 {
-	if [ $FFMPEG_PID ]; then
-		sudo kill -9 $FFMPEG_PID;
-	fi;
-
 	sudo kill -9 $(pgrep -f 'php audio-socket.php');
 	sudo kill -9 $(pgrep -f 'app-geckos-server.js');
 	sudo kill -9 $(pgrep -f 'ffmpeg -loglevel quiet');
@@ -51,13 +47,12 @@ ROM="/home/unknown/Downloads/Enduro (USA).zip";
 #ROM="/home/unknown/Downloads/Seaquest.zip";
 #ROM="/home/unknown/Downloads/Turmoil (USA).zip";
 firefox http://localhost/stella/web/render_web.html &
-exec /home/unknown/stella/stella -holdreset -stream.hostname "127.0.0.1" -stream.vport "23" -stream.aport "24" -audio.device -1 "$ROM" &
+exec /home/unknown/stella/stella -holdreset \
+	-audio.volume 50 -audio.device -1 -audio.fragment_size 256 -audio.sample_rate 44100 -audio.stereo 0 \
+	-stream.hostname "127.0.0.1" -stream.vport "23" -stream.aport "24" \
+	"$ROM" &
 STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;
-
-# record and send sound to UDP
-exec ffmpeg -loglevel quiet -vn -f pulse -i $(get_sink_source_index) -ar 44100 -ac 1 -b:a 32k -preset ultrafast -f mpegts udp://$HOST:$PORT &
-FFMPEG_PID=$!;
 
 echo 'Waiting for game to finish ...';
 while [ -d /proc/$STELLA_PID ] ; do

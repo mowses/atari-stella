@@ -8,6 +8,7 @@
 
   <script src="./geckos.io-client.1.7.2.min.js"></script>
   <script src="./colors/ntsc.js"></script>
+  <script src="./mixingTables/mixingTables.js"></script>
   <script type="text/javascript">
     function get_random_color() {
         return {
@@ -45,14 +46,18 @@
 <body>
 
   <canvas id="enduro" width="160" height="228"></canvas>
-  <input type="text" id="current_id" />
+  <br />
+  VIDEO FRAME:<input type="text" id="vcurrent_id" />
+  <br />
+  AUDIO FRAME:<input type="text" id="acurrent_id" />
   <!-- <audio src="php-audio.php" type='audio/mp3' controls preload="none"></audio> -->
 
   <!-- <audio controls>
     <source src="http://localhost:2001/php-audio.php" type="audio/mp3">
   </audio> -->
   <script>
-    var current_id = document.getElementById('current_id');
+    var vcurrent_id = document.getElementById('vcurrent_id');
+    var acurrent_id = document.getElementById('acurrent_id');
     var canvas = document.getElementById('enduro');
     var ctx = canvas.getContext('2d', { alpha: false });
     var pixels_image = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -69,7 +74,7 @@
         const _height = _pixels_image.height;
 
         var pixels = _pixels_image.data;
-        var last;
+        var last = 0;  // same in TIA
 
         for (let y = 0; y < _height; y++) {
             for (let x = 0; x < _width; x++) {
@@ -106,7 +111,7 @@
     //     render(_output);
     // }, 1000);
   </script>
-  <!-- <script src="./app-geckos-client.js"></script> -->
+  <script src="./app-geckos-client.js"></script>
   <!-- <script type="text/javascript">
     //abaixo funcionou
     window.addEventListener('load', function () {
@@ -180,24 +185,39 @@
 
     // https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer/getChannelData
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+console.log('_inputSampleRate:', _inputSampleRate, 'channels_len:', channels_len);
+
+function build_complete_audio_fragment(incomplete_fragment)
+{
+  let last = mixingTable[0];  // 0 same as /src/emucore/tia/Audio.cxx:118
+
+  for (var i = 0, t = incomplete_fragment.length; i < t; i++) {
+    if (incomplete_fragment[i] === undefined) {
+      incomplete_fragment[i] = last;
+      continue;
+    }
+
+    incomplete_fragment[i] = mixingTable[incomplete_fragment[i]];
+
+    last = incomplete_fragment[i];
+  }
+
+  return incomplete_fragment;  // return complete fragment now
+}
 
 function to_buffer(arr)
 {
-  var myArrayBuffer = audioCtx.createBuffer(channels_len, _inputSampleRate, _inputSampleRate);
-  var fragment = [];
-  for (var i = 0, len = arr.length; i < _inputSampleRate; i++) {
-    fragment[i] = arr[i % len];
-  }
-  myArrayBuffer.copyToChannel(Float32Array.from(fragment), 0, 0);
+  let myArrayBuffer = audioCtx.createBuffer(channels_len, arr.length, _inputSampleRate);
+  myArrayBuffer.copyToChannel(Float32Array.from(arr), 0, 0);
 
   return myArrayBuffer;
 }
 function play_buffer(buffer) {
-  var source = context.createBufferSource(); // creates a sound source
-  source.buffer = buffer;                    // tell the source which sound to play
-  source.connect(context.destination);       // connect the source to the context's destination (the speakers)
-  source.start(0);                           // play the source now
-                                             // note: on older systems, may have to use deprecated noteOn(time);
+  let source = context.createBufferSource();
+  source.buffer = buffer;
+  source.connect(context.destination);
+  source.loop = false;
+  source.start(0);
 }
 
     // function play_buffer(fragment)
@@ -229,7 +249,7 @@ function play_buffer(buffer) {
     //     source.start(0);
     // }
 
-    //play_buffer(to_buffer(audio_fragment));
+    play_buffer(to_buffer(audio_fragment));
 
   // // Get an AudioBufferSourceNode.
   // // This is the AudioNode to use when we want to play an AudioBuffer
@@ -319,22 +339,22 @@ function play_buffer(buffer) {
 
 
 
-    function play_audio(buffer)
-    {
-        let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let myArrayBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
-        // This gives us the actual array that contains the data
-        let nowBuffering = myArrayBuffer.getChannelData(0);
-        for (var i = 0, t = buffer.length; i < t; i++) {
-            nowBuffering[i] = buffer[i];
-        }
+    // function play_audio(buffer)
+    // {
+    //     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    //     let myArrayBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
+    //     // This gives us the actual array that contains the data
+    //     let nowBuffering = myArrayBuffer.getChannelData(0);
+    //     for (var i = 0, t = buffer.length; i < t; i++) {
+    //         nowBuffering[i] = buffer[i];
+    //     }
 
-        let source = audioCtx.createBufferSource();
-        source.buffer = myArrayBuffer;
-        source.connect(audioCtx.destination);
-        source.loop = false;
-        source.start(0);
-    }
+    //     let source = audioCtx.createBufferSource();
+    //     source.buffer = myArrayBuffer;
+    //     source.connect(audioCtx.destination);
+    //     source.loop = false;
+    //     source.start(0);
+    // }
 
     // window.addEventListener('load', function () {
     //     let buffer = [];

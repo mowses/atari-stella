@@ -12,7 +12,8 @@ var channel = geckos({ port: 3000, url: window.location.protocol + '//' + window
 channel.onConnect(function(error) {
 
 	const current_is_greater = current_is_greater_than;
-	var last_sequence = -1;
+	var alast_sequence = -1;
+	var vlast_sequence = -1;
 
 	if (error) {
 		console.log('ERROR connecting!', error.message);
@@ -45,10 +46,10 @@ channel.onConnect(function(error) {
 		to = setTimeout(function() {
 			let cc = String.fromCharCode;
 			let current_sequence = +(data.data.splice(0, 10).map( cp => cc( cp ) ).join(''));
-			current_id.value = current_sequence;
-			if (current_sequence < last_sequence) {
-				if (!current_is_greater(current_sequence, last_sequence)) {
-					console.log('received old data... discarding:', current_sequence, last_sequence);
+			vcurrent_id.value = current_sequence;
+			if (current_sequence < vlast_sequence) {
+				if (!current_is_greater(current_sequence, vlast_sequence)) {
+					console.log('received old video data... discarding:', current_sequence, vlast_sequence);
 					return;
 				}
 			}
@@ -63,8 +64,32 @@ channel.onConnect(function(error) {
 			}
 
 			render(output);
-			last_sequence = current_sequence;
+			vlast_sequence = current_sequence;
 		});
 		
+	})
+
+	channel.on('audio received', function(data) {
+		let cc = String.fromCharCode;
+		let current_sequence = +(data.data.splice(0, 10).map( cp => cc( cp ) ).join(''));
+		acurrent_id.value = current_sequence;
+		if (current_sequence < alast_sequence) {
+			if (!current_is_greater(current_sequence, alast_sequence)) {
+				console.log('received old audio data... discarding:', current_sequence, alast_sequence);
+				return;
+			}
+		}
+
+		let output = [];
+		let len = 7;
+
+		for (var i = 0, t = data.data.length - (len - 1); i < t; i += len) {
+			let buffer_index = +(data.data.slice(i, i+5).map( cp => cc( cp ) ).join(''));
+			let mixing_table_index = +(data.data.slice(i+5, i+7).map( cp => cc( cp ) ).join(''));
+			output[buffer_index] = mixing_table_index;
+		}
+
+		alast_sequence = current_sequence;
+		play_buffer(to_buffer(build_complete_audio_fragment(output)));
 	})
 })

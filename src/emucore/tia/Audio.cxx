@@ -193,7 +193,7 @@ Int8 Audio::findIndex(Int16 value)
     }
   }
 
-  return -1;
+  return 0;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
