@@ -1,4 +1,4 @@
-var ntsc_colors = [
+const ntsc_colors = [
 	{r: 0, g: 0, b: 0, a: 255}, 
 	{r: 0, g: 0, b: 0, a: 255}, 
 	{r: 74, g: 74, b: 74, a: 255}, 
