@@ -90,6 +90,6 @@ channel.onConnect(function(error) {
 		}
 
 		alast_sequence = current_sequence;
-		play_buffer(to_buffer(build_complete_audio_fragment(output)));
+		audio_manager.appendFragment(build_complete_audio_fragment(output));
 	})
 })

@@ -9,6 +9,7 @@
   <script src="./geckos.io-client.1.7.2.min.js"></script>
   <script src="./colors/ntsc.js"></script>
   <script src="./mixingTables/mixingTables.js"></script>
+  <script src="./AudioManager.js"></script>
   <script src="./test-output-data.js"></script>
   <style>
     body {
@@ -47,7 +48,7 @@
         const _pixels_image = pixels_image;
         const _ctx = ctx;
         const _output = output;
-        const _colors = colors;
+        const _colors = ntsc_colors;
         const _width = _pixels_image.width;
         const _height = _pixels_image.height;
 
@@ -90,319 +91,51 @@
     // }, 1000);
   </script>
   <script src="./app-geckos-client.js"></script>
-  <!-- <script type="text/javascript">
-    //abaixo funcionou
-    window.addEventListener('load', function () {
-        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        var source = audioCtx.createBufferSource();
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'Kamen_Rider_Black_RX_OP.mp3');
-        xhr.responseType = 'arraybuffer';
-        xhr.addEventListener('load', function (r) {
-            audioCtx.decodeAudioData(
-                    xhr.response, 
-                    function (buffer) {
-                        source.buffer = buffer;
-                        source.connect(audioCtx.destination);
-                        source.loop = false;
-                    });
-            source.start(0);
-        });
-        xhr.send();
-    });
-  </script> -->
-  <script type="text/javascript">
-    function AudioManager(channels, sampleRate, fragmentSize)
-    {
-      channels = channels === undefined ? 1 : channels;
-      sampleRate = sampleRate === undefined ? 44100 : sampleRate;
-      fragmentSize = fragmentSize === undefined ? 128 : Math.max(1, fragmentSize);
-
-      let current_fragment = channels <= 1
-        ? [new Float32Array(fragmentSize)]
-        : [new Float32Array(fragmentSize), new Float32Array(fragmentSize)];
-      let _buffer = channels <= 1 ? [[]] : [[],[]];
-      let events = {
-        onended: function() {
-          console.log('ENDEEEED');
-          //current_fragment[0].set(nextBuffer(0));
-          
-          this.source = createBufferSource();
-          this.source.onended = events.onended;
-          this.source.buffer = initChannels();
-          this.source.start();
-
-        }.bind(this)
-      };
-
-      init = init.bind(this);
-      createBufferSource = createBufferSource.bind(this);
-      initChannels = initChannels.bind(this);
-
-      init();
-
-      this.appendBuffer = function(buffer, channel) {
-        channel = channel === undefined ? 0 : channel;
-
-        while (buffer.length > fragmentSize) {
-          this.appendBuffer(buffer.splice(0, fragmentSize), channel);
-        }
-
-        if (buffer instanceof Float32Array) {
-          _buffer[channel].push(buffer);
-          return;
-        }
-
-        _buffer[channel].push(Float32Array.from(buffer));
-      }
-
-      this.play = function() {
-        if (!this.source) {
-          this.source = createBufferSource();
-          this.source.onended = events.onended;
-          this.source.buffer = initChannels();
-        }
-        this.source.start();
-      }
-
-      this.getBuffer = function() {
-        return _buffer;
-      }
-
-      function init() {
-        this.context = new (window.AudioContext || window.webkitAudioContext)();
-      }
-
-      function createBufferSource() {
-        let source = this.context.createBufferSource();
-        
-        source.loop = false;
-        source.connect(this.context.destination);
-
-        return source;
-      }
-
-      function nextBuffer(channel) {
-        channel = channel === undefined ? 0 : channel;
-        
-        return _buffer[channel].shift();
-      }
-
-      function initChannels() {
-        let buffer_object = this.context.createBuffer(channels, fragmentSize, sampleRate);
-
-        for (var channel = 0; channel < channels; channel++) {
-          current_fragment[channel] = nextBuffer(channel);
-          if (current_fragment[channel]) {
-            buffer_object.copyToChannel(current_fragment[channel], channel, 0);
-          } 
-        }
-
-        return buffer_object;
-      }
-    }
-  </script>
   <script type="text/javascript">
     // init /var/www/html/6502.ts/src/web/driver/audio/PCMChannel.ts
-    let isNtsc = true;
+    let is_ntsc = true;
+    let sample_rate = getClockHz() / 114;
+    let channels_len = 1;
+    var audio_manager = new AudioManager(channels_len, sample_rate);
+    console.log('sample_rate:', sample_rate, 'channels_len:', channels_len);
 
     function getClockHz() {
-        if (isNtsc) {
+        if (is_ntsc) {
             return 262 * 228 * 60;
         } else {
             return 312 * 228 * 50;
         }
     }
 
-    let context = new (window.AudioContext || window.webkitAudioContext)();
-    let _inputSampleRate = getClockHz() / 114;
-    let channels_len = 1;
-    //console.log(_inputSampleRate, audio_fragment.length);
-    /*let _outputSampleRate = context.sampleRate;
-    let _gain = context.createGain();
-    let _audio = true;
-    let _volume = 1;
-    let _hostFragmentSize = 1024;
-    let target = context.createChannelMerger(channels_len);
-    _gain.gain.value = _volume;
-    _gain.connect(target);
 
-    let _processor = context.createScriptProcessor(_hostFragmentSize, 1, 1);
-    let _bufferSize = _processor.bufferSize;
+    function build_complete_audio_fragment(incomplete_fragment)
+    {
+      let last = mixingTable[0];  // 0 same as /src/emucore/tia/Audio.cxx:118
+      let fragment_size = 262;
 
-    _processor.connect(_gain);
-    _processor.onaudioprocess = e => _processAudio(e);
-
-    const buffer = context.createBuffer(1, 1, context.sampleRate);
-    buffer.getChannelData(0).set([0]);
-
-    // bind /var/www/html/6502.ts/src/web/driver/audio/PCMChannel.ts:53
-    let _fragmentSize = (isNtsc ? 262 : 312) * 4;
-    let _currentFragment = audio_fragment;
-    // this._fragmentIndex = 0;
-    // this._lastFragment = null;
-    // this._bufferUnderrun = true;
-    // this._fragmentRing = new RingBuffer<PoolMemberInterface<Float32Array>>(
-    //     Math.ceil(((4 * this._bufferSize) / this._outputSampleRate / this._fragmentSize) * this._inputSampleRate)
-    // );
-    // this._fragmentRing.evict.addHandler(b => b.release());
-
-    // this._audio.newFrame.addHandler(PCMChannel._onNewFragment, this);
-
-    // this._resampler.reset(this._inputSampleRate, this._outputSampleRate);*/
-    
-
-    // https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer/getChannelData
-var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-console.log('_inputSampleRate:', _inputSampleRate, 'channels_len:', channels_len);
-
-function build_complete_audio_fragment(incomplete_fragment)
-{
-  let last = mixingTable[0];  // 0 same as /src/emucore/tia/Audio.cxx:118
-  let fragment_size = 262;
-
-  for (var i = 0, t = fragment_size; i < t; i++) {
-    if (incomplete_fragment[i] === undefined) {
-      incomplete_fragment[i] = last;
-      continue;
-    }
-
-    incomplete_fragment[i] = mixingTable[incomplete_fragment[i]];
-
-    last = incomplete_fragment[i];
-  }
-  console.log(incomplete_fragment.join(','));
-  return incomplete_fragment;  // return complete fragment now
-}
-
-function to_buffer(arr)
-{
-  let myArrayBuffer = audioCtx.createBuffer(channels_len, arr.length, _inputSampleRate);
-  myArrayBuffer.copyToChannel(Float32Array.from(arr), 0, 0);
-
-  return myArrayBuffer;
-}
-function play_buffer(buffer) {
-  let source = context.createBufferSource();
-  source.buffer = buffer;
-  //console.log(buffer.getChannelData(0).join(','));
-  source.connect(context.destination);
-  source.loop = false;
-  source.start();
-}
-
-  //play_buffer(to_buffer(audio_fragment));
-  // setInterval(function() {
-  //   play_buffer(to_buffer(audio_fragment));
-  // }, 3000);
-
-    ////////////
-    function _processAudio(e) {
-        if (!_audio) {
-            return;
+      for (var i = 0, t = fragment_size; i < t; i++) {
+        if (incomplete_fragment[i] === undefined) {
+          incomplete_fragment[i] = last;
+          continue;
         }
-        //console.log('_processAudio - PCM');
 
-        // const outputBuffer = e.outputBuffer.getChannelData(0);
-        // for (var i= 0, t = audio_fragment.length; i < t; i++) {
-        //     outputBuffer[i] = audio_fragment[i];
-        // }
-        //console.log(outputBuffer);
-        // let bufferIndex = 0;
+        incomplete_fragment[i] = mixingTable[incomplete_fragment[i]];
 
-        // const fillBuffer = (until: number) => {
-        //     const previousFragmentBuffer = this._lastFragment && this._lastFragment.get();
-
-        //     while (bufferIndex < until) {
-        //         if (this._resampler.needsData()) {
-        //             this._resampler.push(
-        //                 (this._audio && this._audio.isPaused()) || !previousFragmentBuffer
-        //                     ? 0
-        //                     : previousFragmentBuffer[this._fragmentIndex++] * this._volume
-        //             );
-
-        //             if (this._fragmentIndex >= this._fragmentSize) {
-        //                 this._fragmentIndex = 0;
-        //             }
-        //         }
-
-        //         outputBuffer[bufferIndex++] = this._resampler.get();
-        //     }
-        // };
-
-        // // Give the emulation half a fragment of head start when recovering from an underrun
-        // if (this._currentFragment && this._bufferUnderrun) {
-        //     fillBuffer(this._bufferSize >>> 1);
-        //     this._bufferUnderrun = false;
-        // }
-
-        // let fragmentBuffer = this._currentFragment && this._currentFragment.get();
-
-        // while (bufferIndex < this._bufferSize && this._currentFragment) {
-        //     if (this._resampler.needsData()) {
-        //         this._resampler.push(fragmentBuffer[this._fragmentIndex++] * this._volume);
-
-        //         if (this._fragmentIndex >= this._fragmentSize) {
-        //             this._fragmentIndex = 0;
-
-        //             if (this._lastFragment) {
-        //                 this._lastFragment.release();
-        //             }
-
-        //             this._lastFragment = this._currentFragment;
-        //             this._currentFragment = this._fragmentRing.pop();
-
-        //             fragmentBuffer = this._currentFragment && this._currentFragment.get();
-        //         }
-        //     }
-
-        //     outputBuffer[bufferIndex++] = this._resampler.get();
-        // }
-
-        // if (bufferIndex < this._bufferSize) {
-        //     this._bufferUnderrun = true;
-        // }
-
-        // fillBuffer(this._bufferSize);
+        last = incomplete_fragment[i];
+      }
+      return incomplete_fragment;  // return complete fragment now
     }
 
-
-
-
-    // function play_audio(buffer)
-    // {
-    //     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    //     let myArrayBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 3, audioCtx.sampleRate);
-    //     // This gives us the actual array that contains the data
-    //     let nowBuffering = myArrayBuffer.getChannelData(0);
-    //     for (var i = 0, t = buffer.length; i < t; i++) {
-    //         nowBuffering[i] = buffer[i];
-    //     }
-
-    //     let source = audioCtx.createBufferSource();
-    //     source.buffer = myArrayBuffer;
-    //     source.connect(audioCtx.destination);
-    //     source.loop = false;
-    //     source.start(0);
-    // }
-
-    // window.addEventListener('load', function () {
-    //     let buffer = [];
-    //     for (var i = 0; i < 50000; i++) {
-    //         buffer[i] = Math.random() * 2 - 1;
-    //     }
-    //     play_audio(buffer);
-    // });
   </script>
-  <script type="text/javascript">
+  <!-- <script type="text/javascript">
     var all_fragments = [];
+    var audio_manager = new AudioManager(1, sample_rate);
+
     for (var i = 0, t = audio_fragments.length; i < t; i++) {
-      //audio_manager.appendBuffer(audio_fragments[i]);
+      audio_manager.appendFragment(audio_fragments[i]);
       all_fragments = all_fragments.concat(audio_fragments[i]);
     }
-    var audio_manager = new AudioManager(1, _inputSampleRate, 1000);
-    audio_manager.appendBuffer(all_fragments);
-    audio_manager.play();
-  </script>
+    // audio_manager.appendFragment(all_fragments.concat());
+  </script> -->
 </body>
 </html>
