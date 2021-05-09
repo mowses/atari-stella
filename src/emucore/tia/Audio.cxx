@@ -117,14 +117,15 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
       // my gambi
       Int16 last = 0;
       string msg_str = "";
+      // cerr << "===BEFORE===\n";
       for (std::size_t i = 0; i < mySampleIndex; ++i) {
+        // cerr << "myCurrentFragment[" << std::to_string(i) << "] = " << std::to_string(myCurrentFragment[i]) << "\n";
         if (myCurrentFragment[i] == last) continue;
         
         // o correto seria usar 10 (comprimento de uInt32) ao inves de 5 para i
         // mas quero economizar trafego na rede
         // se tiver problemas no recebimento dos dados, deve-se entao, alterar aqui
         msg_str = msg_str + to_zero_lead(i, 5) + to_zero_lead(findIndex(myCurrentFragment[i]), 2);
-        // cerr << "myCurrentFragment[" << std::to_string(i) << "] = " << std::to_string(myCurrentFragment[i]);
         // cerr << "-last was:" << std::to_string(last);
         // cerr << "-INDEX IS:" << std::to_string(findIndex(myCurrentFragment[i]));
         // cerr << "\n";
@@ -140,6 +141,10 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
 
     mySampleIndex = 0;
     myCurrentFragment = myAudioQueue->enqueue(myCurrentFragment);
+    // cerr << "===AFTER===\n";
+    // for (std::size_t i = 0; i < myAudioQueue->fragmentSize(); ++i) {
+    //   cerr << "myCurrentFragment[" << std::to_string(i) << "] = " << std::to_string(myCurrentFragment[i]) << "\n";
+    // }
   }
 }
 
