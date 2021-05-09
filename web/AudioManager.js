@@ -11,9 +11,7 @@ function AudioManager(channels, sampleRate)
 
   init();
 
-  this.appendFragment = function(fragment, channel) {
-    channel = channel === undefined ? 0 : channel;
-
+  this.appendFragment = function(fragment) {
     let source = createBufferSource();
     source.buffer = createBuffer(Float32Array.from(fragment));
 
