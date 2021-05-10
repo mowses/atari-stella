@@ -10,6 +10,7 @@
   <script src="./colors/ntsc.js"></script>
   <script src="./mixingTables/mixingTables.js"></script>
   <script src="./AudioManager.js"></script>
+  <script src="./KeyManager.js"></script>
   <script src="./test-output-data.js"></script>
   <style>
     body {
@@ -48,7 +49,7 @@
         const _pixels_image = pixels_image;
         const _ctx = ctx;
         const _output = output;
-        const _colors = ntsc_colors;
+        const _colors = NTSC_colors;
         const _width = _pixels_image.width;
         const _height = _pixels_image.height;
 
@@ -83,7 +84,8 @@
         
         _ctx.putImageData(_pixels_image, 0, 0);
     }
-
+var _output = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
+        render(_output);
     // setInterval(function() {
     //     colors = random_colors(255);
     //     var _output = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
