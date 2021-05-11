@@ -159,3 +159,9 @@ function setAlpha()
         pixels[i + 3] = 255;
     }
 }
+
+function toggle_audio(toggle) {
+    channel.userData.audioEnabled = toggle === undefined ? !channel.userData.audioEnabled : !!toggle;
+    console.log(channel.userData.audioEnabled);
+    channel.emit('audio toggle', channel.userData.audioEnabled);
+}

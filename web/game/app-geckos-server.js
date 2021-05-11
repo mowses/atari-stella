@@ -2,13 +2,17 @@ const fs = require('fs');
 const geckos = require('@geckos.io/server').default;
 const { iceServers } = require('@geckos.io/server');
 const dgram = require('dgram');
+const PORT = 3000;
 
 const address = '127.0.0.1';
 const vport = 23;
 const aport = 24;
 
 const io = geckos({
-	iceServers: process.env.NODE_ENV === 'production' ? iceServers : []
+	iceServers: process.env.NODE_ENV === 'production' ? iceServers : [],
+	ordered: false,
+	maxRetransmits: 0,
+	autoManageBuffering: true,  // If autoManageBuffering is on, Geckos.io will prefer to drop messages instead of adding them to the send queue.
 })
 const connected_clients = [];
 
@@ -81,6 +85,7 @@ aserver.on('message', (msg, rinfo) => {
 	//console.log(`aserver got: ${msg} from ${rinfo.address}:${rinfo.port}`);
 
 	connected_clients.forEach((channel) => {
+		if (channel.userData.audioEnabled === false) return;
 		channel.emit('audio received', buffer)
 	});
 	alast_sequence = current_sequence;
@@ -95,8 +100,7 @@ aserver.bind(aport, address);
 // END AUDIO SOCKET
 
 
-// listen on port 3000 (default is 9208)
-io.listen(3000)
+io.listen(PORT)
 
 io.onConnection(channel => {
 
@@ -118,6 +122,10 @@ io.onConnection(channel => {
 		}
 		console.log(`${channel.id} got disconnected`)
 	})
+
+	channel.on('audio toggle', (toggle) => {
+		channel.userData.audioEnabled = toggle === undefined ? !channel.userData.audioEnabled : !!toggle;
+	});
 
 	connected_clients.push(channel);
 
