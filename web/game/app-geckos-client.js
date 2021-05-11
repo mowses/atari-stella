@@ -7,7 +7,10 @@ function current_is_greater_than(s1, s2)
 }
 
 // pass the port and url of the server
-var channel = geckos({ port: 3000, url: window.location.protocol + '//' + window.location.hostname })
+var channel = geckos({
+	url: window.location.protocol + '//' + window.location.hostname,
+	port: 3000,
+})
 
 channel.onConnect(function(error) {
 
@@ -51,6 +54,8 @@ channel.onConnect(function(error) {
 	})
 
 	channel.on('audio received', function(data) {
+		if (channel.userData.audioEnabled === false) return;
+
 		let cc = String.fromCharCode;
 		let current_sequence = +(data.data.splice(0, 10).map( cp => cc( cp ) ).join(''));
 		if (current_sequence < alast_sequence) {
