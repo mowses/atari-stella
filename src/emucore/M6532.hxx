@@ -26,6 +26,13 @@ class Settings;
 #include "bspf.hxx"
 #include "Device.hxx"
 
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 /**
   This class models the M6532 RAM-I/O-Timer (aka RIOT) chip in the 2600
   console.  Note that since the M6507 CPU doesn't contain an interrupt line,
@@ -38,6 +45,26 @@ class Settings;
 */
 class M6532 : public Device
 {
+  /**
+   * ** FIFO **
+   */
+  private:
+    /**
+     * Open FIFO for player
+     */
+    bool openFIFO(int player);
+    std::array<int, 2> fildes;
+
+    /**
+     * READ FIFO for player
+     */
+    int readFIFO(int player);
+    std::array<int, 2> lastPlayerInputs{0};
+    std::array<uInt32, 2> packetSequences{0};
+    /**
+     * end FIFO
+     */
+    
   public:
     /**
       The RIOT debugger class is a friend who needs special access

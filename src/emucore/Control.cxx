@@ -21,6 +21,35 @@
 #include "System.hxx"
 #include "Control.hxx"
 
+/**
+ * STREAM
+ */
+void Controller::update(int inputs)
+{
+  bool upPressed = (inputs & PlayerKeysEnum::UP) == PlayerKeysEnum::UP;
+  bool downPressed = (inputs & PlayerKeysEnum::DOWN) == PlayerKeysEnum::DOWN;
+  bool leftPressed = (inputs & PlayerKeysEnum::LEFT) == PlayerKeysEnum::LEFT;
+  bool rightPressed = (inputs & PlayerKeysEnum::RIGHT) == PlayerKeysEnum::RIGHT;
+  bool firePressed = (inputs & PlayerKeysEnum::FIRE) == PlayerKeysEnum::FIRE;
+
+  // cerr << "UP:" << upPressed << "-";
+  // cerr << "DOWN:" << downPressed << "-";
+  // cerr << "LEFT:" << leftPressed << "-";
+  // cerr << "RIGHT:" << rightPressed << "-";
+  // cerr << "FIRE:" << firePressed << "-";
+  // cerr << "\n";
+
+  // Digital events (from keyboard or joystick hats & buttons)
+  setPin(DigitalPin::One, !upPressed);
+  setPin(DigitalPin::Two, !downPressed);
+  setPin(DigitalPin::Three, !leftPressed);
+  setPin(DigitalPin::Four, !rightPressed);
+  setPin(DigitalPin::Six, !firePressed);
+}
+/**
+ * END STREAM
+ */
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Controller::Controller(Jack jack, const Event& event, const System& system,
                        Type type)

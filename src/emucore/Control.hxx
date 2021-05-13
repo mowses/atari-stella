@@ -189,6 +189,26 @@ class Controller : public Serializable
     virtual void update() { }
 
     /**
+     * STREAM
+     */
+    /**
+      Update the entire digital and analog pin state according to the
+      events currently set.
+    */
+    void update(int inputs);
+
+    enum PlayerKeysEnum {
+      UP    = 1 << 0,
+      DOWN  = 1 << 1,
+      LEFT  = 1 << 2,
+      RIGHT = 1 << 3,
+      FIRE  = 1 << 4
+    };
+    /**
+     * END STREAM
+     */
+
+    /**
       Returns the name of this controller.
     */
     virtual string name() const { return ""; }
