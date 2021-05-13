@@ -25,11 +25,53 @@
 
 #include "M6532.hxx"
 
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+bool M6532::openFIFO(int player) {
+  const char* fifo_path = ("/tmp/player-" + std::to_string(player)).c_str();
+  cerr << "Waiting for other side FIFO connection at " << fifo_path << "\n";
+
+  fildes[player] = open(fifo_path, O_RDONLY);
+
+  if(fildes[player]<0){
+      cerr << "cannot open FIFO at " << fifo_path;
+      exit(1);
+  }
+  cerr << "connection stablished at " << fifo_path << "\n";
+  return true;
+}
+
+int M6532::readFIFO(int player) {
+  char buf[2];
+  
+  if (::read(fildes[player], buf, 2) == 0) {
+    return lastPlayerInputs[player];
+  }
+  // cerr << "BUFF:";
+  // cerr << buf;
+  // cerr << "\n";
+
+  return atoi(buf);
+}
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 M6532::M6532(const ConsoleIO& console, const Settings& settings)
   : myConsole{console},
     mySettings{settings}
 {
+  #ifdef STREAM_SUPPORT
+    packetSequences[0] = 0;
+    packetSequences[1] = 0;
+    lastPlayerInputs[0] = 0;
+    lastPlayerInputs[1] = 0;
+    openFIFO(0);
+    openFIFO(1);
+  #endif
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,8 +136,35 @@ void M6532::update()
   bool prevPA7 = lport.getPin(Controller::DigitalPin::Four);
 
   // Update entire port state
-  lport.update();
-  rport.update();
+  #ifdef STREAM_SUPPORT
+    int player1_inputs = readFIFO(0);
+    int player2_inputs = readFIFO(1);
+    
+
+    if (player1_inputs != lastPlayerInputs[0]) {
+      // cerr << "PLAYER 1:";
+      // cerr << player1_inputs;
+      // cerr << "|lastPlayerInputs:before:";
+      // cerr << lastPlayerInputs[0];
+
+      lastPlayerInputs[0] = player1_inputs;
+      lport.update(player1_inputs);
+      
+      // cerr << "|lastPlayerInputs:after:";
+      // cerr << lastPlayerInputs[0];
+      // cerr << "\n";
+    }
+    if (player2_inputs != lastPlayerInputs[1]) {
+      lastPlayerInputs[1] = player2_inputs;
+      rport.update(player2_inputs);
+    }
+
+  #else
+    lport.update();
+    rport.update();
+
+  #endif
+
   myConsole.switches().update();
 
   // Get new PA7 state
