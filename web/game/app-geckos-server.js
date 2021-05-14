@@ -111,6 +111,7 @@ io.listen(PORT)
 io.onConnection(channel => {
 
 	let ilast_sequence = -1;
+	let last_pressed_keys = null;
 
 	channel.onDisconnect(() => {
 		let index = connected_clients.indexOf(channel);
@@ -124,8 +125,11 @@ io.onConnection(channel => {
 		channel.userData.audioEnabled = toggle === undefined ? !channel.userData.audioEnabled : !!toggle;
 	});
 
-	channel.on('player pressed keys', (pressed_keys) => {
-		var current_sequence = pressed_keys[0];
+	channel.on('player pressed keys', (data) => {
+		let pressed_keys = data[1];
+		if (pressed_keys == last_pressed_keys) return;
+		
+		let current_sequence = data[0];
 		if (current_sequence < ilast_sequence) {
 			if (!current_is_greater_than(current_sequence, ilast_sequence)) {
 				// console.log('received old input data... discarding:', current_sequence, ilast_sequence);
@@ -134,8 +138,10 @@ io.onConnection(channel => {
 		}
 		//const myBuffer = Buffer.alloc(2).fill(0);
 		//myBuffer.writeUInt8(pressed_keys);
-		ilast_sequence = pressed_keys[0];
-		p0_fifoWS.write('' + pressed_keys[1]);
+		//console.log('pressed keys:', pressed_keys, current_sequence);
+		ilast_sequence = current_sequence;
+		last_pressed_keys = pressed_keys;
+		p0_fifoWS.write('' + pressed_keys);
 	});
 
 	connected_clients.push(channel);
