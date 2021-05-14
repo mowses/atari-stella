@@ -22,6 +22,37 @@ function current_is_greater_than(s1, s2)
            ((s1 < s2) && (s2 - s1 > 2147483648));
 }
 
+// PLAYER INPUT FIFO STREAM
+const p0_fifo = '/tmp/player-0';
+const p1_fifo = '/tmp/player-1';
+const p0_fifoWS = fs.createWriteStream(p0_fifo);
+const p1_fifoWS = fs.createWriteStream(p1_fifo);
+// const IPC = require('node-ipc').IPC;
+// const ipc = new IPC;
+// ipc.config.encoding='hex';
+// console.log('NODE.js is Opening fifo at ' + p0_fifo + '...');
+
+// // ipc.connectTo('player0', p0_fifo, (socket) => {
+// // 	const myBuffer = Buffer.alloc(2).fill(0);
+// // 	myBuffer.writeUInt8(16);
+// // 	console.log(myBuffer);
+// // });
+// ipc.serve(p0_fifo, function() {
+// 	console.log('foi?');
+// 	// ipc.server.emit(
+//  //        socket,
+//  //        'message',  //this can be anything you want so long as
+//  //                    //your client knows.
+//  //        data+' world!'
+//  //    );
+// });
+// const fd = fs.openSync('/tmp/player-0', fs.constants.O_WRONLY | fs.constants.O_TRUNC | fs.constants.O_NONBLOCK);
+// console.log(fd, 'HEREEEEEEEEEEEEEEEEE');
+// const p1_fifo_input = new net.Socket({ fd, readable: false, writable: true });
+// const p1_fifo_input = net.createConnection('/tmp/player-0');
+// console.log(p1_fifo_input);
+// END PLAYER INPUT FIFO STREAM
+
 // VIDEO SOCKET
 const vserver = dgram.createSocket('udp4');
 var vlast_sequence = -1;
@@ -104,17 +135,6 @@ io.listen(PORT)
 
 io.onConnection(channel => {
 
-	// // audio stream
-	// const file = '/var/www/html/stella/web/Kamen_Rider_Black_RX_OP.mp3';
-	// const highWaterMark = 20;
-	// const readable = fs.createReadStream(file, { highWaterMark });
-	// const stat = fs.statSync(file);
-	
-	// readable.on('data', function(chunk) {
-	// 	channel.emit('audio stream', chunk);
-	// });
-	// end audio stream
-
 	channel.onDisconnect(() => {
 		let index = connected_clients.indexOf(channel);
 		if (index !== -1) {
@@ -125,6 +145,13 @@ io.onConnection(channel => {
 
 	channel.on('audio toggle', (toggle) => {
 		channel.userData.audioEnabled = toggle === undefined ? !channel.userData.audioEnabled : !!toggle;
+	});
+
+	channel.on('player pressed keys', (pressed_keys) => {
+		//const myBuffer = Buffer.alloc(2).fill(0);
+		//myBuffer.writeUInt8(pressed_keys);
+		//console.log('player have pressed keys', pressed_keys);
+		p0_fifoWS.write('' + pressed_keys);
 	});
 
 	connected_clients.push(channel);

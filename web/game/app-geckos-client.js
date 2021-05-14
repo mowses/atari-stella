@@ -28,8 +28,11 @@ channel.onConnect(function(error) {
 
 	channel.onDisconnect(function() {
 		console.log('You got disconnected')
+		game.player.isConnected = false;
 	})
 
+	game.player.isConnected = true;
+	
 	channel.on('video received', function(data) {
 		let cc = String.fromCharCode;
 		let current_sequence = +(data.data.splice(0, 10).map( cp => cc( cp ) ).join(''));
@@ -49,7 +52,7 @@ channel.onConnect(function(error) {
 			output[pixel] = color;
 		}
 
-		gamedata.video = output;
+		game.data.video = output;
 		vlast_sequence = current_sequence;
 	})
 
