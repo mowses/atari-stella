@@ -27,31 +27,6 @@ const p0_fifo = '/tmp/player-0';
 const p1_fifo = '/tmp/player-1';
 const p0_fifoWS = fs.createWriteStream(p0_fifo);
 const p1_fifoWS = fs.createWriteStream(p1_fifo);
-// const IPC = require('node-ipc').IPC;
-// const ipc = new IPC;
-// ipc.config.encoding='hex';
-// console.log('NODE.js is Opening fifo at ' + p0_fifo + '...');
-
-// // ipc.connectTo('player0', p0_fifo, (socket) => {
-// // 	const myBuffer = Buffer.alloc(2).fill(0);
-// // 	myBuffer.writeUInt8(16);
-// // 	console.log(myBuffer);
-// // });
-// ipc.serve(p0_fifo, function() {
-// 	console.log('foi?');
-// 	// ipc.server.emit(
-//  //        socket,
-//  //        'message',  //this can be anything you want so long as
-//  //                    //your client knows.
-//  //        data+' world!'
-//  //    );
-// });
-// const fd = fs.openSync('/tmp/player-0', fs.constants.O_WRONLY | fs.constants.O_TRUNC | fs.constants.O_NONBLOCK);
-// console.log(fd, 'HEREEEEEEEEEEEEEEEEE');
-// const p1_fifo_input = new net.Socket({ fd, readable: false, writable: true });
-// const p1_fifo_input = net.createConnection('/tmp/player-0');
-// console.log(p1_fifo_input);
-// END PLAYER INPUT FIFO STREAM
 
 // VIDEO SOCKET
 const vserver = dgram.createSocket('udp4');
@@ -135,6 +110,8 @@ io.listen(PORT)
 
 io.onConnection(channel => {
 
+	let ilast_sequence = -1;
+
 	channel.onDisconnect(() => {
 		let index = connected_clients.indexOf(channel);
 		if (index !== -1) {
@@ -148,10 +125,17 @@ io.onConnection(channel => {
 	});
 
 	channel.on('player pressed keys', (pressed_keys) => {
+		var current_sequence = pressed_keys[0];
+		if (current_sequence < ilast_sequence) {
+			if (!current_is_greater_than(current_sequence, ilast_sequence)) {
+				// console.log('received old input data... discarding:', current_sequence, ilast_sequence);
+				return;
+			}
+		}
 		//const myBuffer = Buffer.alloc(2).fill(0);
 		//myBuffer.writeUInt8(pressed_keys);
-		//console.log('player have pressed keys', pressed_keys);
-		p0_fifoWS.write('' + pressed_keys);
+		ilast_sequence = pressed_keys[0];
+		p0_fifoWS.write('' + pressed_keys[1]);
 	});
 
 	connected_clients.push(channel);

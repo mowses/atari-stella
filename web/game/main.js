@@ -36,6 +36,7 @@ game.data = {
 };
 
 var audio_manager;
+var ilast_sequence = -1;
 
 function preload ()
 {
@@ -82,7 +83,7 @@ function update() {
         (game.player.keys.fire.isDown && PlayerKeysEnum.FIRE);
 
     if (game.player.isConnected === true) {
-        channel.emit('player pressed keys', player_pressed_keys);
+        channel.emit('player pressed keys', [ilast_sequence++, player_pressed_keys]);
     }
 
     render(game.data.video);
