@@ -46,5 +46,6 @@ echo 'Waiting for game to finish ...';
 while [ -d /proc/$STELLA_PID ] ; do
 	sleep 1
 done;
+echo '';
 echo 'GAME WAS FINISHED...';
 destruct > /dev/null 2>&1;

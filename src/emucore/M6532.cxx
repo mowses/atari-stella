@@ -36,7 +36,7 @@ bool M6532::openFIFO(int player) {
   const char* fifo_path = ("/tmp/player-" + std::to_string(player)).c_str();
   cerr << "Waiting for other side FIFO connection at " << fifo_path << "\n";
 
-  fildes[player] = open(fifo_path, O_RDONLY);
+  fildes[player] = open(fifo_path, O_RDONLY | O_NONBLOCK);
 
   if(fildes[player]<0){
       cerr << "cannot open FIFO at " << fifo_path;

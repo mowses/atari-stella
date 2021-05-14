@@ -21,16 +21,17 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-const player = {
+game.player = {
     keys: {
         up: null,
         down: null,
         left: null,
         right: null,
         fire: null,
-    }
+    },
+    isConnected: false,
 }
-const gamedata = {
+game.data = {
     video: {},
 };
 
@@ -48,11 +49,11 @@ function preload ()
 
 function create ()
 {
-    player.keys.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
-    player.keys.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
-    player.keys.left = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-    player.keys.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-    player.keys.fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL);
+    game.player.keys.up = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
+    game.player.keys.down = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.DOWN);
+    game.player.keys.left = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
+    game.player.keys.right = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
+    game.player.keys.fire = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.CTRL);
     
     let scaleX = scale.x / dpr;
     let scaleY = scale.y / dpr;
@@ -65,8 +66,8 @@ function create ()
 
     setAlpha();
 
-    // gamedata.video = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
-    // render(gamedata.video);
+    // game.data.video = JSON.parse('{' + output.replaceAll(/(\d+)\:/ig, '"$1":') + '"end":true}');
+    // render(game.data.video);
 
     // audio setup
     audio_manager = new AudioManager(1, 31440);  // sample rate: 262 * 228 * 60 / 114
@@ -74,13 +75,17 @@ function create ()
 
 function update() {
     let player_pressed_keys =
-        (player.keys.up.isDown && PlayerKeysEnum.UP) +
-        (player.keys.down.isDown && PlayerKeysEnum.DOWN) +
-        (player.keys.left.isDown && PlayerKeysEnum.LEFT) +
-        (player.keys.right.isDown && PlayerKeysEnum.RIGHT) +
-        (player.keys.fire.isDown && PlayerKeysEnum.FIRE);
+        (game.player.keys.up.isDown && PlayerKeysEnum.UP) +
+        (game.player.keys.down.isDown && PlayerKeysEnum.DOWN) +
+        (game.player.keys.left.isDown && PlayerKeysEnum.LEFT) +
+        (game.player.keys.right.isDown && PlayerKeysEnum.RIGHT) +
+        (game.player.keys.fire.isDown && PlayerKeysEnum.FIRE);
 
-    render(gamedata.video);
+    if (game.player.isConnected === true) {
+        channel.emit('player pressed keys', player_pressed_keys);
+    }
+
+    render(game.data.video);
 }
 
 function render(output) {
@@ -162,6 +167,5 @@ function setAlpha()
 
 function toggle_audio(toggle) {
     channel.userData.audioEnabled = toggle === undefined ? !channel.userData.audioEnabled : !!toggle;
-    console.log(channel.userData.audioEnabled);
     channel.emit('audio toggle', channel.userData.audioEnabled);
 }
