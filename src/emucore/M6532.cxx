@@ -52,6 +52,12 @@ int M6532::readFIFO(int player) {
   if (::read(fildes[player], buf, 2) == 0) {
     return lastPlayerInputs[player];
   }
+
+  char tmp[2];
+
+  // empty the fifo. Is there any other way of doing it?
+  while(::read(fildes[player], tmp, 2) != 0) {}  // old values: discard it
+  
   // cerr << "BUFF:";
   // cerr << buf;
   // cerr << "\n";
