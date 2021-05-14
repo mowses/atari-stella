@@ -140,7 +140,7 @@ function build_complete_audio_fragment(incomplete_fragment) {
     let last = mixingTable[0];  // 0 same as /src/emucore/tia/Audio.cxx:118
     let fragment_size = 262;
 
-    for (var i = 0, t = fragment_size; i < t; i++) {
+    for (var i = 0; i < fragment_size; i++) {
         if (incomplete_fragment[i] === undefined) {
             incomplete_fragment[i] = last;
             continue;
