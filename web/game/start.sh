@@ -27,12 +27,12 @@ echo "Node server started ...";
 SINK=$(pactl load-module module-null-sink sink_name='stella-null-sink');
 echo 'AUDIO SINK FOR THIS SESSION: '$SINK' WITH ID: #'$(get_sink_source_index);
 
-ROM="/home/unknown/stella/web/roms/Enduro (USA).zip";
-#ROM="/home/unknown/stella/web/roms/River Raid (USA).zip";
-#ROM="/home/unknown/stella/web/roms/Seaquest.zip";
-#ROM="/home/unknown/stella/web/roms/Turmoil (USA).zip";
-#ROM="/home/unknown/stella/web/roms/Pitfall II - Lost Caverns (USA).zip";
-#ROM="/home/unknown/stella/web/roms/Pac-Man (USA).zip";
+ROM="/home/unknown/stella/web/game/roms/Enduro (USA).zip";
+#ROM="/home/unknown/stella/web/game/roms/River Raid (USA).zip";
+#ROM="/home/unknown/stella/web/game/roms/Seaquest.zip";
+#ROM="/home/unknown/stella/web/game/roms/Turmoil (USA).zip";
+#ROM="/home/unknown/stella/web/game/roms/Pitfall II - Lost Caverns (USA).zip";
+#ROM="/home/unknown/stella/web/game/roms/Pac-Man (USA).zip";
 firefox http://localhost/stella/web/game/index.html &
 exec /home/unknown/stella/stella -holdreset \
 	-audio.volume 50 -audio.device -1 -audio.fragment_size 256 -audio.sample_rate 44100 -audio.stereo 0 \
