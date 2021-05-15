@@ -55,8 +55,11 @@ int M6532::readFIFO(int player) {
 
   char tmp[2];
 
-  // empty the fifo. Is there any other way of doing it?
-  while(::read(fildes[player], tmp, 2) != 0) {}  // old values: discard it
+  // consume the entire FIFO. The latest entry is the newest
+  while(::read(fildes[player], tmp, 2) != 0) {
+    buf[0] = tmp[0];
+    buf[1] = tmp[1];
+  }
   
   // cerr << "BUFF:";
   // cerr << buf;
