@@ -34,7 +34,7 @@
 
 bool M6532::openFIFO(int player) {
   string fifo_path = (mySettings.getString("stream.path") + "/player-" + std::to_string(player));
-  cerr << "Waiting for other side FIFO connection at " << fifo_path << "\n";
+  //cerr << "Waiting for other side FIFO connection at " << fifo_path << "\n";
 
   fildes[player] = open(fifo_path.c_str(), O_RDONLY | O_NONBLOCK);
 
@@ -42,7 +42,7 @@ bool M6532::openFIFO(int player) {
       cerr << "cannot open FIFO at " << fifo_path;
       exit(1);
   }
-  cerr << "connection stablished at " << fifo_path << "\n";
+  cerr << "FIFO connection stablished at " << fifo_path << "\n";
   return true;
 }
 
