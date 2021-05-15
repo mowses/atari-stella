@@ -40,6 +40,7 @@ Settings::Settings()
   setPermanent("stella.version", "6.2.1");
 
   // STREAM options
+  setPermanent("stream.path", "/tmp");
   setPermanent("stream.hostname", "127.0.0.1");
   setPermanent("stream.aport", "24");
   setPermanent("stream.vport", "23");
