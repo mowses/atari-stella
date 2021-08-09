@@ -32,40 +32,55 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-bool M6532::openFIFO(int player) {
-  string fifo_path = (mySettings.getString("stream.path") + "/player-" + std::to_string(player));
-  //cerr << "Waiting for other side FIFO connection at " << fifo_path << "\n";
+bool M6532::openSocket(int player) {
+  fd[player] = socket(AF_UNIX,SOCK_DGRAM,0);
+  
+  if(fd[player]<0){
+      cerr << "cannot open socket";
+      return false;
+  }
 
-  fildes[player] = open(fifo_path.c_str(), O_RDONLY | O_NONBLOCK);
+  struct sockaddr_un sockaddr;
+  uint len = sizeof(sockaddr);
+  stringstream ss;
+  string config;
+  ss << "stream.player." << (player + 1);
+  ss >> config;
 
-  if(fildes[player]<0){
-      cerr << "cannot open FIFO at " << fifo_path;
+  const char* file = mySettings.getString(config).c_str();
+  unlink(file);
+
+  memset(&servaddr[player], 0, len);
+  servaddr[player].sun_family = AF_UNIX;
+  strcpy(servaddr[player].sun_path, file);
+
+  int rc = bind(fd[player], (struct sockaddr *) &servaddr[player], len);
+  if (rc == -1) {
+      cerr << "cannot bind socket. Err: " << errno << " for player: " << player << " file:" << file;
       exit(1);
   }
-  cerr << "FIFO connection stablished at " << fifo_path << "\n";
   return true;
 }
 
-int M6532::readFIFO(int player) {
-  char buf[2];
-  
-  if (::read(fildes[player], buf, 2) == 0) {
-    return lastPlayerInputs[player];
+int M6532::readSocket(int player) {
+  uint len = sizeof(servaddr[player]);
+  struct sockaddr_un peer_sock;
+  int bufferSize = 256;
+  int result = -1;
+  char buf[bufferSize] = {0};
+  int bytes_tmp;
+
+  // consume the entire BUFFER. The latest entry is the newest
+  while((bytes_tmp = recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len)) > 0) {
+    result = atoi(buf);
   }
 
-  char tmp[2];
+  // if (bytes_rec <= 0) {
+  //   return lastPlayerInputs[player];
+  // }
 
-  // consume the entire FIFO. The latest entry is the newest
-  while(::read(fildes[player], tmp, 2) != 0) {
-    buf[0] = tmp[0];
-    buf[1] = tmp[1];
-  }
-  
-  // cerr << "BUFF:";
-  // cerr << buf;
-  // cerr << "\n";
-
-  return atoi(buf);
+  // cerr << "RECEIVED: " << result << " | bytes: " << bytes_rec << endl;
+  return result;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,8 +93,8 @@ M6532::M6532(const ConsoleIO& console, const Settings& settings)
     packetSequences[1] = 0;
     lastPlayerInputs[0] = 0;
     lastPlayerInputs[1] = 0;
-    openFIFO(0);
-    openFIFO(1);
+    openSocket(0);
+    openSocket(1);
   #endif
 }
 
@@ -146,24 +161,25 @@ void M6532::update()
 
   // Update entire port state
   #ifdef STREAM_SUPPORT
-    int player1_inputs = readFIFO(0);
-    int player2_inputs = readFIFO(1);
+    int player1_inputs = readSocket(0);
+    int player2_inputs = readSocket(1);
     
-
-    if (player1_inputs != lastPlayerInputs[0]) {
+    if (player1_inputs >= 0 && player1_inputs != lastPlayerInputs[0]) {
       // cerr << "PLAYER 1:";
       // cerr << player1_inputs;
       // cerr << "|lastPlayerInputs:before:";
       // cerr << lastPlayerInputs[0];
+      // cerr << endl;
 
       lastPlayerInputs[0] = player1_inputs;
       lport.update(player1_inputs);
       
       // cerr << "|lastPlayerInputs:after:";
       // cerr << lastPlayerInputs[0];
-      // cerr << "\n";
+      // cerr << endl;
     }
-    if (player2_inputs != lastPlayerInputs[1]) {
+
+    if (player2_inputs >= 0 && player2_inputs != lastPlayerInputs[1]) {
       lastPlayerInputs[1] = player2_inputs;
       rport.update(player2_inputs);
     }

@@ -44,6 +44,7 @@
 #include "System.hxx"
 
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
@@ -625,9 +626,9 @@ class TIA : public Device
      */
     bool udpSend(const char *msg);
 
-    sockaddr_in servaddr;
+    struct sockaddr_un servaddr;
     int fd;
-    uInt32 packetSequence;
+    uInt16 packetSequence;
     /**
      * end UDP send
      */

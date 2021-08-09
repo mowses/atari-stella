@@ -37,7 +37,8 @@ firefox http://localhost/stella/web/game/index.html &
 exec /home/unknown/stella/stella -holdreset \
 	-audio.volume 50 -audio.device -1 -audio.fragment_size 256 -audio.sample_rate 44100 -audio.stereo 0 \
 	-audio.resampling_quality 1 -audio.headroom 0 -audio.buffer_size 0 \
-	-stream.hostname "127.0.0.1" -stream.vport "23" -stream.aport "24" \
+	-stream.video "/tmp/stella-video.sock" -stream.audio "/tmp/stella.audio.sock" \
+	-stream.player.1 "/tmp/player1-input.sock" -stream.player.2 "/tmp/player2-input.sock" \
 	"$ROM" &
 STELLA_PID=$!;
 echo 'STELLA PID:' $STELLA_PID;
