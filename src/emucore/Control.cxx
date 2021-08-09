@@ -31,13 +31,15 @@ void Controller::update(int inputs)
   bool leftPressed = (inputs & PlayerKeysEnum::LEFT) == PlayerKeysEnum::LEFT;
   bool rightPressed = (inputs & PlayerKeysEnum::RIGHT) == PlayerKeysEnum::RIGHT;
   bool firePressed = (inputs & PlayerKeysEnum::FIRE) == PlayerKeysEnum::FIRE;
+  // bool selectPressed = (inputs & PlayerKeysEnum::SELECT) == PlayerKeysEnum::SELECT;
 
   // cerr << "UP:" << upPressed << "-";
   // cerr << "DOWN:" << downPressed << "-";
   // cerr << "LEFT:" << leftPressed << "-";
   // cerr << "RIGHT:" << rightPressed << "-";
   // cerr << "FIRE:" << firePressed << "-";
-  // cerr << "\n";
+  // cerr << "SELECT:" << selectPressed << "-";
+  // cerr << endl;
 
   // Digital events (from keyboard or joystick hats & buttons)
   setPin(DigitalPin::One, !upPressed);

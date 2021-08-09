@@ -26,9 +26,14 @@ class Settings;
 #include "bspf.hxx"
 #include "Device.hxx"
 
+#include <iostream>
+#include <sstream>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -46,23 +51,24 @@ class Settings;
 class M6532 : public Device
 {
   /**
-   * ** FIFO **
+   * ** SOCKET **
    */
   private:
     /**
-     * Open FIFO for player
+     * Open SOCKET for player
      */
-    bool openFIFO(int player);
-    std::array<int, 2> fildes;
+    bool openSocket(int player);
+    std::array<int, 2> fd;
+    std::array<struct sockaddr_un, 2> servaddr;
 
     /**
-     * READ FIFO for player
+     * READ SOCKET for player
      */
-    int readFIFO(int player);
+    int readSocket(int player);
     std::array<int, 2> lastPlayerInputs{0};
     std::array<uInt32, 2> packetSequences{0};
     /**
-     * end FIFO
+     * end SOCKET
      */
     
   public:

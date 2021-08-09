@@ -42,10 +42,10 @@ Settings::Settings()
   setPermanent("stella.version", "6.2.1");
 
   // STREAM options
-  setPermanent("stream.path", "/tmp");
-  setPermanent("stream.hostname", "127.0.0.1");
-  setPermanent("stream.aport", "24");
-  setPermanent("stream.vport", "23");
+  setPermanent("stream.player.1", "/tmp/player1-input.sock");
+  setPermanent("stream.player.2", "/tmp/player2-input.sock");
+  setPermanent("stream.audio", "/tmp/audio.sock");
+  setPermanent("stream.video", "/tmp/video.sock");
 
   // Video-related options
   setPermanent("video", "");

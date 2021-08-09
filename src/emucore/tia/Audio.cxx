@@ -133,7 +133,7 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
         last = myCurrentFragment[i];
       }
       if (msg_str != "") {
-        msg_str = to_zero_lead(++packetSequence, 10) + msg_str;
+        msg_str = to_zero_lead(++packetSequence, 5) + msg_str;
         // cerr << msg_str;
         udpSend(msg_str.c_str());
       }
@@ -150,16 +150,15 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
 }
 
 bool Audio::openSocket(){
-  fd = socket(AF_INET,SOCK_DGRAM,0);
+  fd = socket(AF_UNIX,SOCK_DGRAM,0);
   if(fd<0){
       cerr << "cannot open socket";
       return false;
   }
 
-  bzero(&servaddr,sizeof(servaddr));
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_addr.s_addr = inet_addr(mySettings.getString("stream.hostname").c_str());
-  servaddr.sin_port = htons(mySettings.getInt("stream.aport"));
+  memset(&servaddr, 0, sizeof(struct sockaddr_un));
+  servaddr.sun_family = AF_UNIX;
+  strcpy(servaddr.sun_path, mySettings.getString("stream.audio").c_str());
 
   return true;
 }
