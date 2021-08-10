@@ -30,6 +30,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <errno.h>
 
 
 enum CollisionMask: uInt32 {
@@ -1437,6 +1438,7 @@ bool TIA::openSocket(){
   fd = socket(AF_UNIX,SOCK_DGRAM,0);
   if(fd<0){
       cerr << "cannot open socket";
+      exit(1);
       return false;
   }
 
@@ -1449,10 +1451,11 @@ bool TIA::openSocket(){
 
 bool TIA::udpSend(const char *msg){
     if (sendto(fd, msg, strlen(msg), 0,
-               (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
-        //cerr << "cannot send message";
+            (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0){
+        // cerr << "cannot send message to " << mySettings.getString("stream.video").c_str() << " - " << errno << endl;
         return false;
     }
+    // cerr << "data sent to " << mySettings.getString("stream.video").c_str() << endl;
     return true;
 }
 
