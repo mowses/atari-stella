@@ -79,7 +79,7 @@ int M6532::readSocket(int player) {
   //   return lastPlayerInputs[player];
   // }
 
-  // cerr << "RECEIVED: " << result << " | bytes: " << bytes_rec << endl;
+  // cerr << "RECEIVED: " << result << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
   return result;
 }
 
