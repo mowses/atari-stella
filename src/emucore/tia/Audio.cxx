@@ -112,6 +112,8 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
     myCurrentFragment[mySampleIndex] = myMixingTableSum[sample0 + sample1];
   }
 
+  // cerr << "IS STEREO:" << myAudioQueue->isStereo() << "|fragment size:" << myAudioQueue->fragmentSize() << "--"<< endl;
+
   if(++mySampleIndex == myAudioQueue->fragmentSize()) {
     #ifdef STREAM_SUPPORT
       // my gambi
@@ -121,7 +123,7 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
       for (std::size_t i = 0; i < mySampleIndex; ++i) {
         // cerr << "myCurrentFragment[" << std::to_string(i) << "] = " << std::to_string(myCurrentFragment[i]) << "\n";
         if (myCurrentFragment[i] == last) continue;
-        
+
         // o correto seria usar 10 (comprimento de uInt32) ao inves de 5 para i
         // mas quero economizar trafego na rede
         // se tiver problemas no recebimento dos dados, deve-se entao, alterar aqui
@@ -133,7 +135,6 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
       }
       if (msg_str != "") {
         msg_str = to_zero_lead(++packetSequence, 5) + msg_str;
-        // cerr << msg_str;
         udpSend(msg_str.c_str());
       }
     #endif
@@ -151,7 +152,7 @@ void Audio::addSample(uInt8 sample0, uInt8 sample1)
 bool Audio::openSocket(){
   fd = socket(AF_UNIX,SOCK_DGRAM,0);
   if(fd<0){
-      cerr << "cannot open socket";
+      cerr << "cannot open socket for audio";
       return false;
   }
 
@@ -164,10 +165,11 @@ bool Audio::openSocket(){
 
 bool Audio::udpSend(const char *msg){
     if (sendto(fd, msg, strlen(msg), 0,
-               (sockaddr*)&servaddr, sizeof(servaddr)) < 0){
-        //cerr << "cannot send message";
+               (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0){
+        // cerr << "cannot send message to socket " << mySettings.getString("stream.audio").c_str() << endl;
         return false;
     }
+    // cerr << "audio sent to socket" << mySettings.getString("stream.audio").c_str() << endl;
     return true;
 }
 

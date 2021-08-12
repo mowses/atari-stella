@@ -1411,7 +1411,7 @@ std::string TIA::to_zero_lead(const uInt32 value, const unsigned precision)
 bool TIA::openSocket(){
   fd = socket(AF_UNIX,SOCK_DGRAM,0);
   if(fd<0){
-      cerr << "cannot open socket";
+      cerr << "cannot open socket for video";
       exit(1);
       return false;
   }
