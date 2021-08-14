@@ -44,7 +44,7 @@ bool M6532::openSocket(int player) {
   uint len = sizeof(sockaddr);
   stringstream ss;
   string config;
-  ss << "stream.player." << (player + 1);
+  ss << "stream.player." << (player + 1) << ".input";
   ss >> config;
 
   const char* file = mySettings.getString(config).c_str();

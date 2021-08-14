@@ -74,6 +74,9 @@ namespace HSM {
     Int32 score{0};
     Int32 special{0};
     string name;
+    string player_uuid;
+    string game_session_uuid;
+    Int32 reset;
     string date;
   };
 
@@ -190,6 +193,9 @@ class HighScoresManager
     static const string SPECIAL;
     static const string NAME;
     static const string DATE;
+    static const string PLAYER_UUID;
+    static const string GAME_SESSION_UUID;
+    static const string RESET;
     static const string PROPCHECK;
     static const string CHECKSUM;
 

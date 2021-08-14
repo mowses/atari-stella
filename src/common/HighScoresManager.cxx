@@ -605,6 +605,9 @@ void HighScoresManager::saveHighScores(ScoresData& data) const
       jScore[SPECIAL] = data.scores[r].special;
       jScore[NAME] = data.scores[r].name;
       jScore[DATE] = data.scores[r].date;
+      jScore[PLAYER_UUID] = data.scores[r].player_uuid;
+      jScore[GAME_SESSION_UUID] = data.scores[r].game_session_uuid;
+      jScore[RESET] = data.scores[r].reset;
 
       jScores.push_back(jScore);
     }
@@ -735,6 +738,9 @@ const string HighScoresManager::SCORES = "scores";
 const string HighScoresManager::SCORE = "score";
 const string HighScoresManager::SPECIAL = "special";
 const string HighScoresManager::NAME = "name";
+const string HighScoresManager::PLAYER_UUID = "player_uuid";
+const string HighScoresManager::GAME_SESSION_UUID = "game_session_uuid";
+const string HighScoresManager::RESET = "reset";
 const string HighScoresManager::DATE = "date";
 const string HighScoresManager::PROPCHECK = "propcheck";
 const string HighScoresManager::CHECKSUM = "checksum";
