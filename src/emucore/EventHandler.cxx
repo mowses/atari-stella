@@ -20,6 +20,7 @@
 
 #include "Logger.hxx"
 
+#include "MD5.hxx"
 #include "Base.hxx"
 #include "Console.hxx"
 #include "PaletteHandler.hxx"
@@ -78,6 +79,39 @@ EventHandler::EventHandler(OSystem& osystem)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 EventHandler::~EventHandler()
 {
+}
+
+void EventHandler::saveHighScores()
+{
+  std::stringstream ss;
+  ss << "game_session:" << myOSystem.settings().getString("stream.game_session.uuid");
+  // highscores can only be taken from player1
+  // as Stella vcs documentation says.
+  ss << "|player:" << myOSystem.settings().getString("stream.player.1.uuid");
+  ss << "|reset:" << reset_number;
+
+  last_score = myOSystem.highScores().score();
+  
+  HSM::ScoreEntry entry = {
+    last_score,
+    myOSystem.highScores().special(),
+    myOSystem.settings().getString("initials"),
+    // highscores can only be taken from player1
+    // as stella documentation says.
+    myOSystem.settings().getString("stream.player.1.uuid"),
+    myOSystem.settings().getString("stream.game_session.uuid"),
+    reset_number,
+    now()
+  };
+
+  HSM::ScoresData score = {
+    myOSystem.highScores().variation(),
+    MD5::hash(ss.str()),
+    entry
+  };
+
+
+  myOSystem.highScores().saveHighScores(score);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,6 +185,24 @@ void EventHandler::reset(EventHandlerState state)
     myOSystem.timer().setTimeout([&ev = myEvent]() { ev.clear(); }, 500);
   // Toggle 7800 mode
   set7800Mode();
+
+  // my gambi
+  int interval = stoi(myOSystem.settings().getString("stream.highscore.autosave_interval"));
+  myOSystem.timer().setInterval([&]() {
+    Int32 score = myOSystem.highScores().score();
+
+    if (
+      myState == EventHandlerState::EMULATION &&
+      myOSystem.highScores().enabled() &&
+      score && score != last_score
+      ) {
+      cerr << "auto saving highscore..." << endl;
+      saveHighScores();
+      // enterMenuMode(EventHandlerState::HIGHSCORESMENU);
+      // myOSystem.highscoresMenu().baseDialog()->saveConfig();
+      // leaveMenuMode();
+    }
+  }, interval);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -681,6 +733,44 @@ void EventHandler::handleEvent(Event::Type event, Int32 value, bool repeated)
 
   switch(event)
   {
+    // my gambi
+    case Event::ConsoleReset:
+      if (myState == EventHandlerState::EMULATION)
+      {
+        if (pressed && !repeated && myOSystem.highScores().enabled() && myOSystem.highScores().score()) {
+          cerr << "Reset was pressed, saving highscore..." << endl;
+          saveHighScores();
+          // enterMenuMode(EventHandlerState::HIGHSCORESMENU);
+          // myOSystem.highscoresMenu().baseDialog()->saveConfig();
+          // leaveMenuMode();
+          // myOverlay = &myOSystem.highscoresMenu();
+          // cerr << "score:" << myOSystem.highScores().score() << endl;
+          // cerr << "special:" << myOSystem.highScores().special() << endl;
+          // cerr << "scoreInvert:" << myOSystem.highScores().scoreInvert() << endl;
+          // cerr << "numVariations:" << myOSystem.highScores().numVariations() << endl;
+          // cerr << "specialLabel:" << myOSystem.highScores().specialLabel() << endl;
+          // cerr << "variation:" << myOSystem.highScores().variation() << endl;
+          // cerr << "notes:" << myOSystem.highScores().notes() << endl;
+          // cerr << "saving highscore..." << endl;
+
+          // HSM::ScoreEntry entry = {
+          //   myOSystem.highScores().score(),
+          //   myOSystem.highScores().special(),
+          //   "nameee",
+          //   now()
+          // };
+          // HSM::ScoresData score = {
+          //   myOSystem.highScores().variation(),
+          //   "",
+          //   entry
+          // };
+          
+          // myOSystem.highScores().saveHighScores(score);
+          // cerr << "saved?" << endl;
+        }
+      }
+      if (pressed && !repeated) {reset_number++;}
+      break;
     ////////////////////////////////////////////////////////////////////////
     // Allow adjusting several (mostly repeated) settings using the same six hotkeys
     case Event::PreviousSettingGroup:

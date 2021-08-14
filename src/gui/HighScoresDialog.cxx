@@ -539,15 +539,12 @@ string HighScoresDialog::cartName() const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string HighScoresDialog::now() const
 {
-  std::tm now = BSPF::localTime();
-  ostringstream ss;
+  auto t = std::time(nullptr);
+  auto tm = *std::localtime(&t);
 
-  ss << std::setfill('0') << std::right
-    << std::setw(2) << (now.tm_year - 100) << '-'
-    << std::setw(2) << (now.tm_mon + 1) << '-'
-    << std::setw(2) << now.tm_mday << " "
-    << std::setw(2) << now.tm_hour << ":"
-    << std::setw(2) << now.tm_min;
+  std::ostringstream oss;
+  oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+  auto str = oss.str();
 
-  return ss.str();
+  return str;
 }

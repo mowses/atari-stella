@@ -40,10 +40,12 @@ Settings::Settings()
   setPermanent("stella.version", "6.2.1");
 
   // STREAM options
-  setPermanent("stream.player.1", "/tmp/player1-input.sock");
-  setPermanent("stream.player.2", "/tmp/player2-input.sock");
   setPermanent("stream.audio", "/tmp/audio.sock");
   setPermanent("stream.video", "/tmp/video.sock");
+  setPermanent("stream.player.1.input", "/tmp/player1-input.sock");
+  setPermanent("stream.player.2.input", "/tmp/player2-input.sock");
+  setPermanent("stream.game_session.uuid", "game_session_uuid");
+  setPermanent("stream.highscore.autosave_interval", 60000);
 
   // Video-related options
   setPermanent("video", "");
