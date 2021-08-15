@@ -28,7 +28,7 @@ void OSystemUNIX::getBaseDirectories(string& basedir, string& homedir,
   // Use XDG_CONFIG_HOME if defined, otherwise use the default
   string configDir = BSPF::getenv("XDG_CONFIG_HOME");
   if(configDir == EmptyString)  configDir = "~/.config";
-  basedir = configDir + "/stella";
+  basedir = configDir + "/stella/";
   homedir = "~/";
 
   // Check to see if basedir overrides are active

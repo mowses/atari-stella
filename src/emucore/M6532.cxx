@@ -62,25 +62,49 @@ bool M6532::openSocket(int player) {
   return true;
 }
 
+// int M6532::readSocket(int player) {
+//   uint len = sizeof(servaddr[player]);
+//   struct sockaddr_un peer_sock;
+//   int bufferSize = 256;
+//   int result = -1;
+//   char buf[bufferSize] = {0};
+//   int bytes_tmp;
+
+//   // consume the entire BUFFER. The latest entry is the newest
+//   while((bytes_tmp = recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len)) > 0) {
+//     result = atoi(buf);
+//   }
+
+//   // if (bytes_rec <= 0) {
+//   //   return lastPlayerInputs[player];
+//   // }
+
+//   // cerr << "RECEIVED: " << result << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
+//   return result;
+// }
+
 int M6532::readSocket(int player) {
+  ostringstream result;
   uint len = sizeof(servaddr[player]);
   struct sockaddr_un peer_sock;
-  int bufferSize = 256;
-  int result = -1;
+  int bufferSize = 2;
   char buf[bufferSize] = {0};
-  int bytes_tmp;
 
-  // consume the entire BUFFER. The latest entry is the newest
-  while((bytes_tmp = recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len)) > 0) {
-    result = atoi(buf);
+  // I have faced a bug here
+  // sometimes when the socket saved "16" the recvfrom returned a partial value
+  // for example: it returned "6" instead of "16"
+  // so I came with a workaround: buffer data in a ostringstream and then atoi() it later
+  while(recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len) > 0) {
+    result << buf;
   }
 
-  // if (bytes_rec <= 0) {
-  //   return lastPlayerInputs[player];
-  // }
+  if (result.str().empty()) return -1;
 
-  // cerr << "RECEIVED: " << result << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
-  return result;
+  // currently, atoi() will convert the string to integer
+  // but the latest info is in the end of result variable
+  // @TODO: atoi() only the last bytes from the result, since it contains the newest info
+  // cerr << "RECEIVED: " << result.str().c_str() << ":" << atoi(result.str().c_str()) << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
+  return atoi(result.str().c_str());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
