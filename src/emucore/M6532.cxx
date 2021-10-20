@@ -83,6 +83,32 @@ bool M6532::openSocket(int player) {
 //   return result;
 // }
 
+// int M6532::readSocket(int player) {
+//   ostringstream result;
+//   uint len = sizeof(servaddr[player]);
+//   struct sockaddr_un peer_sock;
+//   int bufferSize = 2;
+//   char buf[bufferSize] = {0};
+
+//   // I have faced a bug here
+//   // sometimes when the socket saved "16" the recvfrom returned a partial value
+//   // for example: it returned "6" instead of "16"
+//   // so I came with a workaround: buffer data in a ostringstream and then atoi() it later
+//   while(recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len) > 0) {
+//     result << buf;
+//   }
+
+//   if (result.str().empty()) return -1;
+
+//   // currently, atoi() will convert the string to integer
+//   // but the latest info is in the end of result variable
+//   // @TODO: atoi() only the last bytes from the result, since it contains the newest info
+//   // cerr << "RECEIVED: " << result.str().c_str() << ":" << atoi(result.str().c_str()) << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
+//   return atoi(result.str().c_str());
+// }
+
+// This is the 3rd time I had to fix this method.
+// This time its returning 160, instead of just 16.
 int M6532::readSocket(int player) {
   ostringstream result;
   uint len = sizeof(servaddr[player]);
@@ -90,21 +116,20 @@ int M6532::readSocket(int player) {
   int bufferSize = 2;
   char buf[bufferSize] = {0};
 
-  // I have faced a bug here
-  // sometimes when the socket saved "16" the recvfrom returned a partial value
-  // for example: it returned "6" instead of "16"
-  // so I came with a workaround: buffer data in a ostringstream and then atoi() it later
+  // consume the entire BUFFER. The latest entry is the newest
+  // but this time I will use the only the first entry
   while(recvfrom(fd[player], buf, bufferSize, MSG_DONTWAIT, (struct sockaddr *) &peer_sock, &len) > 0) {
     result << buf;
   }
 
   if (result.str().empty()) return -1;
 
-  // currently, atoi() will convert the string to integer
-  // but the latest info is in the end of result variable
-  // @TODO: atoi() only the last bytes from the result, since it contains the newest info
-  // cerr << "RECEIVED: " << result.str().c_str() << ":" << atoi(result.str().c_str()) << " | bytes: " << bytes_tmp << " | from player: " << player << endl;
-  return atoi(result.str().c_str());
+  string str = result.str().substr(0, bufferSize);
+
+  if (str.empty()) return -1;
+  
+  cerr << "RECEIVED: " << str.c_str() << ":" << atoi(str.c_str()) << " | from player: " << player << endl;
+  return atoi(str.c_str());
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
