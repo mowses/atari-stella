@@ -46,6 +46,7 @@ Settings::Settings()
   setPermanent("stream.player.2.input", "/tmp/player2-input.sock");
   setPermanent("stream.game_session.uuid", "game_session_uuid");
   setPermanent("stream.highscore.autosave_interval", 60000);
+  setPermanent("stream.udp_frameskip", 0);
 
   // Video-related options
   setPermanent("video", "");
