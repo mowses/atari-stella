@@ -639,6 +639,9 @@ class TIA : public Device
      */
     bool udpSend(const char *msg);
 
+    int udpFrameSkipCurrent = 0;
+    int settingsFrameSkip;
+
     struct sockaddr_un servaddr;
     int fd;
     uInt16 packetSequence;

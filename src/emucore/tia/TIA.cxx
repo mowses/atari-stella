@@ -183,6 +183,7 @@ void TIA::initialize()
 
 #ifdef STREAM_SUPPORT
   packetSequence = 0;
+  settingsFrameSkip = mySettings.getInt("stream.udp_frameskip");
   close(fd);
   openSocket();
 #endif
@@ -1403,6 +1404,18 @@ void TIA::onFrameComplete()
   #ifdef STREAM_SUPPORT
     uInt32 last = 0;
     string msg_str = "";
+
+    // UDP PACKET SKIP
+    if (settingsFrameSkip > 0) {
+      if ((udpFrameSkipCurrent++ % (settingsFrameSkip + 1)) != 0) {
+        // dont broadcast this frame
+        // cerr << "FRAME SKIPPED: " << udpFrameSkipCurrent << " / " << settingsFrameSkip << endl;
+        return;
+      }
+      udpFrameSkipCurrent = 1;
+    }
+    // cerr << "PACKET WILL BE SEND" << endl;
+
 
     // cerr << "packetSequence: " + std::to_string(packetSequence) + " - msg_str for packetSequence:" + msg_str + "\n";
     // cerr << "====" + mySettings.getString("stream.hostname") + ":" + std::to_string(mySettings.getInt("stream.vport")) + "====\n";
