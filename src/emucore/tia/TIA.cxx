@@ -1465,10 +1465,10 @@ bool TIA::openSocket(){
 bool TIA::udpSend(const char *msg){
     if (sendto(fd, msg, strlen(msg), 0,
             (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0){
-        // cerr << "cannot send message to " << mySettings.getString("stream.video").c_str() << " - " << errno << endl;
+        cerr << "cannot send video message to " << mySettings.getString("stream.video").c_str() << " - " << errno << endl;
         return false;
     }
-    // cerr << "data sent to " << mySettings.getString("stream.video").c_str() << endl;
+    cerr << "video data sent to " << mySettings.getString("stream.video").c_str() << endl;
     return true;
 }
 
