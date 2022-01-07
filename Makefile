@@ -111,7 +111,6 @@ endif
 OBJECT_ROOT_PROFILE_GENERERATE := out.pgen
 OBJECT_ROOT_PROFILE_USE := out.pgo
 
-EXEEXT := .so
 EXECUTABLE := bettina_stella_libretro$(EXEEXT)
 EXECUTABLE_PROFILE_GENERATE := stella-pgo-generate$(EXEEXT)
 EXECUTABLE_PROFILE_USE := stella-pgo$(EXEEXT)

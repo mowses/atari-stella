@@ -254,7 +254,7 @@ for ac_option in $@; do
       --disable-png)            _build_png=no        ;;
       --enable-zip)             _build_zip=yes       ;;
       --disable-zip)            _build_zip=no        ;;
-			--use-system-sqlite)      _build_sqlite3=no    ;;
+      --use-system-sqlite)      _build_sqlite3=no    ;;
       --enable-windowed)        _build_windowed=yes  ;;
       --disable-windowed)       _build_windowed=no   ;;
       --enable-shared)          _build_static=no     ;;
