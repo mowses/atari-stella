@@ -10,6 +10,7 @@ src/**/*.tlog
 out
 out.pgo
 out.pgen
+bettina_stella_libretro.so
 stella
 ￼stella-pgo
 ￼stella-pgo-generate
