@@ -110,7 +110,8 @@ endif
 OBJECT_ROOT_PROFILE_GENERERATE := out.pgen
 OBJECT_ROOT_PROFILE_USE := out.pgo
 
-EXECUTABLE := stella$(EXEEXT)
+EXEEXT := .so
+EXECUTABLE := bettina_stella_libretro$(EXEEXT)
 EXECUTABLE_PROFILE_GENERATE := stella-pgo-generate$(EXEEXT)
 EXECUTABLE_PROFILE_USE := stella-pgo$(EXEEXT)
 
@@ -315,7 +316,7 @@ config.mak: $(srcdir)/configure
 
 install: all
 	$(INSTALL) -d "$(DESTDIR)$(BINDIR)"
-	$(INSTALL) -c -m 755 "$(srcdir)/stella$(EXEEXT)" "$(DESTDIR)$(BINDIR)/stella$(EXEEXT)"
+	$(INSTALL) -c -m 755 "$(srcdir)/bettina_stella_libretro$(EXEEXT)" "$(DESTDIR)$(BINDIR)/bettina_stella_libretro$(EXEEXT)"
 	$(INSTALL) -d "$(DESTDIR)$(DOCDIR)"
 	$(INSTALL) -c -m 644 "$(srcdir)/Announce.txt" "$(srcdir)/Changes.txt" "$(srcdir)/Copyright.txt" "$(srcdir)/License.txt" "$(srcdir)/README-SDL.txt" "$(srcdir)/Readme.txt" "$(srcdir)/Todo.txt" "$(srcdir)/docs/index.html" "$(srcdir)/docs/debugger.html" "$(DESTDIR)$(DOCDIR)/"
 	$(INSTALL) -d "$(DESTDIR)$(DOCDIR)/graphics"
@@ -338,10 +339,10 @@ install: all
 	$(INSTALL) -c -m 644 "$(srcdir)/src/common/stella-128x128.png" "$(DESTDIR)$(DATADIR)/icons/hicolor/128x128/apps/stella.png"
 
 install-strip: install
-	$(STRIP) stella$(EXEEXT)
+	$(STRIP) bettina_stella_libretro$(EXEEXT)
 
 uninstall:
-	rm -f  "$(DESTDIR)$(BINDIR)/stella$(EXEEXT)"
+	rm -f  "$(DESTDIR)$(BINDIR)/bettina_stella_libretro$(EXEEXT)"
 	rm -rf "$(DESTDIR)$(DOCDIR)/"
 	rm -f  "$(DESTDIR)$(DATADIR)/applications/stella.desktop"
 	rm -f  "$(DESTDIR)$(DATADIR)/icons/hicolor/16x16/apps/stella.png"
